@@ -1,7 +1,30 @@
-/**
- * @description Middleware для валидации входящих данных
- */
 
+/**
+ * @file ValidateMiddleware.java
+ * 
+ * @description
+ * Middleware для валидации входящих данных в API.
+ * Обеспечивает централизованную проверку тела запроса (body), query-параметров и path-параметров.
+ * 
+ * @details
+ * Основные задачи:
+ * - Десериализация входящих данных в DTO
+ * - Проверка валидности DTO через Jakarta Bean Validation
+ * - Обработка ошибок десериализации и генерация стандартизированных исключений (BaseException)
+ * 
+ * Источники данных:
+ * - fromBody(Context ctx, Class<T> dtoClass) — валидация тела запроса (JSON)
+ * - fromQuery(Context ctx, Class<T> dtoClass) — валидация query-параметров
+ * - fromPath(Context ctx, Class<T> dtoClass) — валидация path-параметров
+ * 
+ * Все валидационные ошибки автоматически конвертируются в формат ErrorResponse.
+ * 
+ * Пример использования в контроллере:
+ * TaskCreateDto dto = ValidateMiddleware.fromBody(ctx, TaskCreateDto.class);
+ * 
+ * @author
+ * Dmytro Shakh
+ */
 package com.chyvacheck.tasktracker.middleware.validate;
 
 /**
@@ -13,10 +36,10 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
-import java.lang.reflect.Field;
 /**
  * ! java imports
  */
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +55,22 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
+/**
+ * Middleware для централизованной валидации входящих данных.
+ */
 public class ValidateMiddleware {
 
 	private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	private static final Validator validator = factory.getValidator();
 
+	/**
+	 * Валидировать тело запроса (body) и преобразовать в DTO.
+	 *
+	 * @param ctx      контекст запроса
+	 * @param dtoClass класс целевого DTO
+	 * @return валидный экземпляр DTO
+	 * @throws Exception если валидация или десериализация не удалась
+	 */
 	public static <T> T fromBody(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = ctx.bodyAsClass(dtoClass);
@@ -47,6 +81,14 @@ public class ValidateMiddleware {
 		}
 	}
 
+	/**
+	 * Валидировать query-параметры и преобразовать в DTO.
+	 *
+	 * @param ctx      контекст запроса
+	 * @param dtoClass класс целевого DTO
+	 * @return валидный экземпляр DTO
+	 * @throws Exception если валидация или десериализация не удалась
+	 */
 	public static <T> T fromQuery(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = dtoClass.getDeclaredConstructor().newInstance();
@@ -69,29 +111,14 @@ public class ValidateMiddleware {
 		}
 	}
 
-	private static Object parseValue(Class<?> type, String value) {
-		if (type == int.class || type == Integer.class)
-			return Integer.parseInt(value);
-		if (type == long.class || type == Long.class)
-			return Long.parseLong(value);
-		if (type == boolean.class || type == Boolean.class)
-			return Boolean.parseBoolean(value);
-		if (type == String.class)
-			return value;
-		// и т.д.
-		return null;
-	}
-
-	public static <T> T from1Path(Context ctx, Class<T> dtoClass) throws Exception {
-		try {
-			T dto = dtoClass.getDeclaredConstructor().newInstance();
-			return validate(dto);
-		} catch (Exception e) {
-			handleDeserializationError(e);
-			return null;
-		}
-	}
-
+	/**
+	 * Валидировать path-параметры и преобразовать в DTO.
+	 *
+	 * @param ctx      контекст запроса
+	 * @param dtoClass класс целевого DTO
+	 * @return валидный экземпляр DTO
+	 * @throws Exception если валидация или десериализация не удалась
+	 */
 	public static <T> T fromPath(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = dtoClass.getDeclaredConstructor().newInstance();
@@ -114,6 +141,34 @@ public class ValidateMiddleware {
 		}
 	}
 
+	/**
+	 * Преобразовать строковое значение в нужный тип поля.
+	 *
+	 * @param type  класс типа поля
+	 * @param value строковое значение
+	 * @return преобразованное значение
+	 */
+	private static Object parseValue(Class<?> type, String value) {
+		if (type == int.class || type == Integer.class)
+			return Integer.parseInt(value);
+		if (type == long.class || type == Long.class)
+			return Long.parseLong(value);
+		if (type == boolean.class || type == Boolean.class)
+			return Boolean.parseBoolean(value);
+		if (type == String.class)
+			return value;
+		// И т.д. по необходимости
+		return null;
+	}
+
+	/**
+	 * Провести валидацию DTO через Validator.
+	 *
+	 * @param dto объект DTO
+	 * @param <T> тип DTO
+	 * @return валидный объект DTO
+	 * @throws BaseException если обнаружены ошибки валидации
+	 */
 	private static <T> T validate(T dto) {
 		System.out.println("📥 validate вызван");
 
@@ -134,6 +189,12 @@ public class ValidateMiddleware {
 		return dto;
 	}
 
+	/**
+	 * Обработать ошибки десериализации запроса.
+	 *
+	 * @param e исключение
+	 * @throws BaseException конвертированная ошибка
+	 */
 	private static void handleDeserializationError(Exception e) throws Exception {
 		// ? Если проверка на целостность `json` объекта не прошла
 		if (e instanceof JsonParseException jpe) {
