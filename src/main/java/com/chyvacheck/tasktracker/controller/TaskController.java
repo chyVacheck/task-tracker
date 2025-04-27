@@ -1,5 +1,27 @@
+
 /**
- * @description Контроллер для работы с сущностью `Task`
+ * @file TaskController.java
+ * 
+ * @description
+ * Контроллер для управления задачами (Task) через HTTP API.
+ * Реализует CRUD-операции для сущности Task, включая:
+ * - Получение списка задач
+ * - Получение одной задачи по ID
+ * - Создание новой задачи
+ * - Завершение задачи
+ * 
+ * @details
+ * Роуты:
+ * - GET /tasks — получить все задачи
+ * - GET /tasks/{id} — получить задачу по ID
+ * - POST /tasks — создать новую задачу
+ * - PATCH /tasks/{id} — отметить задачу как выполненную
+ * 
+ * Использует валидацию данных через ValidateMiddleware.
+ * Генерирует стандартные ответы и ошибки с использованием базовых исключений.
+ * 
+ * @author
+ * Dmytro Shakh
  */
 
 package com.chyvacheck.tasktracker.controller;
@@ -18,22 +40,35 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * ! own imports
+ * ! my imports
  */
-import com.chyvacheck.tasktracker.service.ITaskService;
-import com.chyvacheck.tasktracker.controller.dto.TaskCreateDto;
-import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
 import com.chyvacheck.tasktracker.core.exceptions.custom.NotFoundTaskException;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
+import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
+import com.chyvacheck.tasktracker.controller.dto.TaskCreateDto;
+import com.chyvacheck.tasktracker.service.ITaskService;
 import com.chyvacheck.tasktracker.model.Task;
 
-public class TaskController {
+/**
+ * Контроллер для работы с задачами (Task).
+ */
+
 	private final ITaskService taskService;
 
+	/**
+	 * Конструктор TaskController.
+	 * 
+	 * @param taskService сервис для работы с задачами
+	 */
 	public TaskController(ITaskService taskService) {
 		this.taskService = taskService;
 	}
 
+	/**
+	 * Регистрирует все маршруты (роуты) для задач в Javalin приложении.
+	 * 
+	 * @param app экземпляр Javalin
+	 */
 	public void registerRoutes(Javalin app) {
 		app.get("/tasks", this::getAllTasks);
 		app.get("/tasks/{id}", this::getOneTaskById);
@@ -45,11 +80,22 @@ public class TaskController {
 	 * * Get
 	 */
 
+	/**
+	 * Получить все задачи.
+	 *
+	 * @param ctx контекст запроса
+	 */
 	private void getAllTasks(Context ctx) {
 		List<Task> tasks = taskService.getAllTasks();
 		ctx.json(tasks);
 	}
 
+	/**
+	 * Получить одну задачу по ID.
+	 *
+	 * @param ctx контекст запроса
+	 * @throws Exception если валидация или извлечение ID не удалось
+	 */
 	private void getOneTaskById(Context ctx) throws Exception {
 
 		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
@@ -67,6 +113,12 @@ public class TaskController {
 	 * * Create
 	 */
 
+	/**
+	 * Создать новую задачу.
+	 *
+	 * @param ctx контекст запроса
+	 * @throws Exception если валидация тела запроса не удалась
+	 */
 	private void createOneTask(Context ctx) throws Exception {
 
 		TaskCreateDto dto = ValidateMiddleware.fromBody(ctx, TaskCreateDto.class);
@@ -83,6 +135,11 @@ public class TaskController {
 	 * * Update
 	 */
 
+	/**
+	 * Отметить задачу как выполненную.
+	 *
+	 * @param ctx контекст запроса
+	 */
 	private void completeOneTaskById(Context ctx) {
 		long id = Long.parseLong(ctx.pathParam("id"));
 
