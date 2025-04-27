@@ -2,6 +2,8 @@
 /**
  * @file TaskController.java
  * 
+ * @extends BaseController
+ * 
  * @description
  * Контроллер для управления задачами (Task) через HTTP API.
  * Реализует CRUD-операции для сущности Task, включая:
@@ -43,6 +45,7 @@ import java.util.Optional;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.custom.NotFoundTaskException;
+import com.chyvacheck.tasktracker.core.base.BaseController;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
 import com.chyvacheck.tasktracker.controller.dto.TaskCreateDto;
@@ -52,6 +55,7 @@ import com.chyvacheck.tasktracker.model.Task;
 /**
  * Контроллер для работы с задачами (Task).
  */
+public class TaskController extends BaseController {
 
 	private final ITaskService taskService;
 
