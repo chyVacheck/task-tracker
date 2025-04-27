@@ -9,6 +9,7 @@ package com.chyvacheck.tasktracker.service;
  */
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 /**
  * ! own imports
@@ -21,9 +22,13 @@ public interface ITaskService {
 
 	public Optional<Task> getOneTaskById(long id);
 
-	public Task createOneTask(String title);
+	public Task createOneTask(String title, boolean complete, LocalDateTime deadline);
 
 	public Task createOneTask(String title, boolean complete);
+
+	public Task createOneTask(String title, LocalDateTime deadline);
+
+	public Task createOneTask(String title);
 
 	public Optional<Task> completeOneTaskById(long id);
 }

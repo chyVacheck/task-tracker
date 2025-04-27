@@ -9,6 +9,7 @@ package com.chyvacheck.tasktracker.model;
  * ! java imports
  */
 import java.util.concurrent.atomic.AtomicLong;
+import java.time.LocalDateTime;
 
 public class Task {
 
@@ -23,6 +24,10 @@ public class Task {
 	 */
 
 	/**
+	 * @description время создания задачи
+	 */
+	private final LocalDateTime createdAt = LocalDateTime.now();
+	/**
 	 * @description уникальный id задачи
 	 */
 	private long id;
@@ -33,31 +38,49 @@ public class Task {
 	/**
 	 * @description статус задачи - выполнена либо нет
 	 */
-	private boolean complete = false;
+	private boolean isComplete = false;
+	/**
+	 * @description время до которого необходимо выполнить задачу
+	 */
+	private LocalDateTime deadline;
 
 	/**
 	 * * Конструкторы
 	 */
 
 	/**
-	 * Конструктор,
-	 * 
-	 * @param title - название задачи
+	 * @param title      - название задачи
+	 * @param isComplete - выполнена ли задача
+	 * @param deadline   - время до которого необходимо выполнить задачу
 	 */
-	public Task(String title) {
+	public Task(String title, boolean isComplete, LocalDateTime deadline) {
 		this.id = Task.generateNewId();
 		this.title = title;
+		this.isComplete = isComplete;
+		this.deadline = deadline;
 	}
 
 	/**
-	 * 
 	 * @param title    - название задачи
-	 * @param complete - выполнена ли задача
+	 * @param deadline - время до которого необходимо выполнить задачу
+	 */
+	public Task(String title, LocalDateTime deadline) {
+		this(title, false, deadline);
+	}
+
+	/**
+	 * @param title      - название задачи
+	 * @param isComplete - выполнена ли задача
 	 */
 	public Task(String title, boolean complete) {
-		this.id = Task.generateNewId();
-		this.title = title;
-		this.complete = complete;
+		this(title, complete, null);
+	}
+
+	/**
+	 * @param title - название задачи
+	 */
+	public Task(String title) {
+		this(title, false, null);
 	}
 
 	/**
@@ -72,25 +95,35 @@ public class Task {
 	 * * Методы
 	 */
 
+	public LocalDateTime getCreatedAt() {
+		return this.createdAt;
+	}
+
 	public long getId() {
-		return id;
+		return this.id;
 	}
 
 	public String getTitle() {
 		return this.title;
 	}
 
-	public void complete() {
-		this.complete = true;
+	public void markAsCompleted() {
+		this.isComplete = true;
 	}
 
-	public boolean isComplete() {
-		return this.complete;
+	public boolean isCompleted() {
+		return this.isComplete;
+	}
+
+	public LocalDateTime getDeadline() {
+		return this.deadline;
 	}
 
 	@Override
 	public String toString() {
-		return "Task{id=" + id + ", title='" + title + "', complete=" + complete + "}";
+		return "Task{id=" + id + ", title='" + title + "', isComplete=" + isComplete + "', createAt="
+				+ createdAt.toString()
+				+ "}";
 	}
 
 	public static void resetIdCounter() {

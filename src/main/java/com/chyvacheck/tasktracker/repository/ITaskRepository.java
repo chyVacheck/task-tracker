@@ -9,6 +9,7 @@ package com.chyvacheck.tasktracker.repository;
  */
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 /**
  * ! own imports
@@ -20,6 +21,8 @@ public interface ITaskRepository {
 	public List<Task> getAllTask();
 
 	public Optional<Task> getOneTaskById(long id);
+
+	public Task createOneTask(String title, boolean complete, LocalDateTime deadline);
 
 	public Task createOneTask(String title, boolean complete);
 

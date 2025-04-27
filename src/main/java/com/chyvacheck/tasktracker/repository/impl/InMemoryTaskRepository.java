@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.LocalDateTime;
 
 /**
  * ! own imports
@@ -31,14 +32,18 @@ public class InMemoryTaskRepository implements ITaskRepository {
 		return Optional.ofNullable(tasks.get(id));
 	}
 
-	public Task createOneTask(String title, boolean complete) {
-		Task task = new Task(title, complete);
+	public Task createOneTask(String title, boolean complete, LocalDateTime deadline) {
+		Task task = new Task(title, complete, deadline);
 		tasks.put(task.getId(), task);
 		return task;
 	}
 
+	public Task createOneTask(String title, boolean complete) {
+		return this.createOneTask(title, complete, null);
+	}
+
 	public Task createOneTask(String title) {
-		return this.createOneTask(title, false);
+		return this.createOneTask(title, false, null);
 	}
 
 	public Optional<Task> completeOneTaskById(long id) {
@@ -48,7 +53,7 @@ public class InMemoryTaskRepository implements ITaskRepository {
 			return Optional.empty();
 		}
 
-		task.complete();
+		task.markAsCompleted();
 		return Optional.of(task);
 	}
 }

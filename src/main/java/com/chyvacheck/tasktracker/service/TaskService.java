@@ -9,6 +9,7 @@ package com.chyvacheck.tasktracker.service;
  */
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 /**
  * ! own imports
@@ -38,12 +39,20 @@ public class TaskService implements ITaskService {
 		return repository.getOneTaskById(id);
 	}
 
-	public Task createOneTask(String title) {
-		return repository.createOneTask(title);
+	public Task createOneTask(String title, boolean complete, LocalDateTime deadline) {
+		return repository.createOneTask(title, complete, deadline);
 	}
 
 	public Task createOneTask(String title, boolean complete) {
 		return repository.createOneTask(title, complete);
+	}
+
+	public Task createOneTask(String title, LocalDateTime deadline) {
+		return repository.createOneTask(title, false, deadline);
+	}
+
+	public Task createOneTask(String title) {
+		return repository.createOneTask(title);
 	}
 
 	public Optional<Task> completeOneTaskById(long id) {
