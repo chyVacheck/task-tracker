@@ -45,6 +45,8 @@ import java.time.LocalDateTime;
  * ! own imports
  */
 import com.chyvacheck.tasktracker.core.base.BaseService;
+import com.chyvacheck.tasktracker.core.response.service.ServiceProcessType;
+import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
 import com.chyvacheck.tasktracker.repository.ITaskRepository;
 import com.chyvacheck.tasktracker.model.Task;
 
@@ -72,8 +74,10 @@ public class TaskService extends BaseService implements ITaskService {
 	 *
 	 * @return список всех задач
 	 */
-	public List<Task> getAllTasks() {
-		return repository.getAllTask();
+	public ServiceResponse<List<Task>> getAllTasks() {
+		List<Task> tasks = repository.getAllTask();
+
+		return new ServiceResponse<>(ServiceProcessType.FOUND, tasks);
 	}
 
 	/**
@@ -83,8 +87,10 @@ public class TaskService extends BaseService implements ITaskService {
 	 *                  невыполненные
 	 * @return список задач
 	 */
-	public List<Task> getTasksByCompletionStatus(boolean completed) {
-		return repository.getTasksByCompletionStatus(completed);
+	public ServiceResponse<List<Task>> getTasksByCompletionStatus(boolean completed) {
+		List<Task> tasks = repository.getTasksByCompletionStatus(completed);
+
+		return new ServiceResponse<>(ServiceProcessType.FOUND, tasks);
 	}
 
 	/**
@@ -93,8 +99,16 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @param id идентификатор задачи
 	 * @return задача, если найдена; иначе Optional.empty()
 	 */
-	public Optional<Task> getOneTaskById(long id) {
-		return repository.getOneTaskById(id);
+	public Optional<ServiceResponse<Task>> getOneTaskById(long id) {
+		Optional<Task> taskOpt = repository.getOneTaskById(id);
+
+		if (taskOpt.isEmpty()) {
+			return Optional.empty();
+		}
+
+		Task task = taskOpt.get();
+
+		return Optional.of(new ServiceResponse<>(ServiceProcessType.FOUND, task));
 	}
 
 	/**
@@ -105,50 +119,41 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @param deadline дедлайн задачи
 	 * @return созданная задача
 	 */
-	public Task createOneTask(String title, boolean complete, LocalDateTime deadline) {
-		return repository.createOneTask(title, complete, deadline);
+	public ServiceResponse<Task> createOneTask(String title, boolean complete, LocalDateTime deadline) {
+		Task task = repository.createOneTask(title, complete, deadline);
+
+		return new ServiceResponse<>(ServiceProcessType.CREATED, task);
 	}
 
 	/**
-	 * Создать новую задачу без дедлайна.
+	 * Попытаться завершить задачу по её идентификатору.
+	 * <p>
+	 * Если задача уже завершена, процесс будет отмечен как
+	 * {@link ServiceProcessType#NOTHING}.
+	 * Если задача успешно завершена в результате вызова, процесс будет
+	 * {@link ServiceProcessType#UPDATED}.
+	 * Если задача с указанным ID не найдена, возвращается {@link Optional#empty()}.
 	 *
-	 * @param title    название задачи
-	 * @param complete статус выполнения задачи
-	 * @return созданная задача
+	 * @param id идентификатор задачи для завершения
+	 * @return Optional с {@link ServiceResponse}, содержащим результат выполнения
+	 *         операции
 	 */
-	public Task createOneTask(String title, boolean complete) {
-		return repository.createOneTask(title, complete);
-	}
+	@Override
+	public Optional<ServiceResponse<Task>> completeOneTaskById(long id) {
+		Optional<Task> taskOpt = repository.getOneTaskById(id);
 
-	/**
-	 * Создать новую задачу со статусом \"не выполнена\" и с дедлайном.
-	 *
-	 * @param title    название задачи
-	 * @param deadline дедлайн задачи
-	 * @return созданная задача
-	 */
-	public Task createOneTask(String title, LocalDateTime deadline) {
-		return repository.createOneTask(title, false, deadline);
-	}
+		if (taskOpt.isEmpty()) {
+			return Optional.empty();
+		}
 
-	/**
-	 * Создать новую задачу без дедлайна и со статусом \"не выполнена\".
-	 *
-	 * @param title название задачи
-	 * @return созданная задача
-	 */
-	public Task createOneTask(String title) {
-		return repository.createOneTask(title);
-	}
+		Task task = taskOpt.get();
 
-	/**
-	 * Пометить задачу как выполненную по её ID.
-	 *
-	 * @param id идентификатор задачи
-	 * @return обновлённая задача, если найдена; иначе Optional.empty()
-	 */
-	public Optional<Task> completeOneTaskById(long id) {
-		return repository.completeOneTaskById(id);
+		if (task.isCompleted()) {
+			return Optional.of(new ServiceResponse<>(ServiceProcessType.NOTHING, task));
+		}
+
+		task.markAsCompleted();
+		return Optional.of(new ServiceResponse<>(ServiceProcessType.UPDATED, task));
 	}
 
 }

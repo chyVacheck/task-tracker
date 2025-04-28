@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 /**
  * ! my imports
  */
+import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
 import com.chyvacheck.tasktracker.model.Task;
 
 /**
@@ -49,7 +50,7 @@ public interface ITaskService {
 	 *
 	 * @return список задач
 	 */
-	List<Task> getAllTasks();
+	ServiceResponse<List<Task>> getAllTasks();
 
 	/**
 	 * Получить задачу по её идентификатору.
@@ -57,7 +58,7 @@ public interface ITaskService {
 	 * @param id идентификатор задачи
 	 * @return задача, если найдена; иначе Optional.empty()
 	 */
-	Optional<Task> getOneTaskById(long id);
+	Optional<ServiceResponse<Task>> getOneTaskById(long id);
 
 	/**
 	 * Получить список задач по статусу выполнения.
@@ -66,7 +67,7 @@ public interface ITaskService {
 	 *                  невыполненные
 	 * @return список задач
 	 */
-	List<Task> getTasksByCompletionStatus(boolean completed);
+	ServiceResponse<List<Task>> getTasksByCompletionStatus(boolean completed);
 
 	/**
 	 * Создать новую задачу с указанными параметрами.
@@ -76,39 +77,13 @@ public interface ITaskService {
 	 * @param deadline дедлайн выполнения задачи
 	 * @return созданная задача
 	 */
-	Task createOneTask(String title, boolean complete, LocalDateTime deadline);
+	ServiceResponse<Task> createOneTask(String title, boolean complete, LocalDateTime deadline);
 
 	/**
-	 * Создать новую задачу без дедлайна.
+	 * Завершить задачу по ID с проверкой состояния.
 	 *
-	 * @param title    название задачи
-	 * @param complete статус выполнения задачи
-	 * @return созданная задача
-	 */
-	Task createOneTask(String title, boolean complete);
-
-	/**
-	 * Создать новую задачу со статусом \"не выполнена\" и с дедлайном.
-	 *
-	 * @param title    название задачи
-	 * @param deadline дедлайн выполнения задачи
-	 * @return созданная задача
-	 */
-	Task createOneTask(String title, LocalDateTime deadline);
-
-	/**
-	 * Создать новую задачу без дедлайна и со статусом \"не выполнена\".
-	 *
-	 * @param title название задачи
-	 * @return созданная задача
-	 */
-	Task createOneTask(String title);
-
-	/**
-	 * Пометить задачу как выполненную по её ID.
-	 * 
 	 * @param id идентификатор задачи
-	 * @return обновлённая задача, если найдена; иначе Optional.empty()
+	 * @return результат выполнения операции с информацией о процессе
 	 */
-	Optional<Task> completeOneTaskById(long id);
+	Optional<ServiceResponse<Task>> completeOneTaskById(long id);
 }

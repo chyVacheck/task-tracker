@@ -49,6 +49,8 @@ import java.util.Optional;
 import com.chyvacheck.tasktracker.core.exceptions.custom.NotFoundTaskException;
 import com.chyvacheck.tasktracker.core.response.http.HttpStatusCode;
 import com.chyvacheck.tasktracker.core.response.http.SuccessResponse;
+import com.chyvacheck.tasktracker.core.response.service.ServiceProcessType;
+import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
 import com.chyvacheck.tasktracker.core.base.BaseController;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
@@ -92,70 +94,87 @@ public class TaskController extends BaseController {
 	 */
 
 	/**
-	 * Получить все задачи.
+	 * Получить список всех задач.
+	 * <p>
+	 * Возвращает статус {@code 200 OK} и список всех задач.
 	 *
-	 * @param ctx контекст запроса
+	 * @param ctx Контекст HTTP-запроса Javalin
 	 */
 	private void getAllTasks(Context ctx) {
-		List<Task> tasks = taskService.getAllTasks();
+
+		ServiceResponse<List<Task>> resultOpt = taskService.getAllTasks();
 
 		ctx.json(new SuccessResponse(
 				HttpStatusCode.OK,
 				"All tasks fetched successfully",
-				tasks,
+				resultOpt.getData(),
 				null));
 	}
 
 	/**
-	 * Получить все выполненные задачи.
+	 * Получить список всех выполненных задач.
+	 * <p>
+	 * Возвращает статус {@code 200 OK} и список задач, помеченных как завершённые.
 	 *
-	 * @param ctx контекст запроса
+	 * @param ctx Контекст HTTP-запроса Javalin
 	 */
 	private void getCompletedTasks(Context ctx) {
-		List<Task> tasks = taskService.getTasksByCompletionStatus(true);
+
+		ServiceResponse<List<Task>> resultOpt = taskService.getTasksByCompletionStatus(true);
 
 		ctx.json(new SuccessResponse(
 				HttpStatusCode.OK,
 				"Complete tasks fetched successfully",
-				tasks,
+				resultOpt.getData(),
 				null));
 	}
 
 	/**
-	 * Получить все невыполненные задачи.
+	 * Получить список всех невыполненных задач.
+	 * <p>
+	 * Возвращает статус {@code 200 OK} и список задач, которые ещё не завершены.
 	 *
-	 * @param ctx контекст запроса
+	 * @param ctx Контекст HTTP-запроса Javalin
 	 */
 	private void getIncompleteTasks(Context ctx) {
-		List<Task> tasks = taskService.getTasksByCompletionStatus(false);
+
+		ServiceResponse<List<Task>> resultOpt = taskService.getTasksByCompletionStatus(false);
 
 		ctx.json(new SuccessResponse(
 				HttpStatusCode.OK,
 				"Incomplete tasks fetched successfully",
-				tasks,
+				resultOpt.getData(),
 				null));
 	}
 
 	/**
-	 * Получить одну задачу по ID.
+	 * Получить одну задачу по её идентификатору.
+	 * <p>
+	 * Если задача найдена, возвращает статус {@code 200 OK} и данные задачи.
+	 * Если задача с указанным ID не найдена, выбрасывает исключение
+	 * {@link NotFoundTaskException}.
+	 * <p>
+	 * Использует валидацию параметров пути через {@link ValidateMiddleware}.
 	 *
-	 * @param ctx контекст запроса
-	 * @throws Exception если валидация или извлечение ID не удалось
+	 * @param ctx Контекст HTTP-запроса Javalin
+	 * @throws Exception Если валидация параметров запроса завершается с ошибкой
 	 */
 	private void getOneTaskById(Context ctx) throws Exception {
 
 		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
 
-		Optional<Task> updated = taskService.getOneTaskById(dto.getId());
+		Optional<ServiceResponse<Task>> resultOpt = taskService.getOneTaskById(dto.getId());
 
-		if (!updated.isPresent()) {
+		if (resultOpt.isEmpty()) {
 			throw new NotFoundTaskException("Task with this id not found", Map.of("id", dto.getId()));
 		}
+
+		ServiceResponse<Task> result = resultOpt.get();
 
 		ctx.json(new SuccessResponse(
 				HttpStatusCode.OK,
 				"Tasks fetched successfully",
-				updated.get(),
+				result.getData(),
 				Map.of("id", dto.getId())));
 
 	}
@@ -166,24 +185,26 @@ public class TaskController extends BaseController {
 
 	/**
 	 * Создать новую задачу.
+	 * <p>
+	 * При успешном создании задачи возвращает статус {@code 201 Created} и данные
+	 * новой задачи.
+	 * <p>
+	 * Использует валидацию тела запроса через {@link ValidateMiddleware}.
 	 *
-	 * @param ctx контекст запроса
-	 * @throws Exception если валидация тела запроса не удалась
+	 * @param ctx Контекст HTTP-запроса Javalin
+	 * @throws Exception Если валидация тела запроса завершается с ошибкой
 	 */
 	private void createOneTask(Context ctx) throws Exception {
 
 		TaskCreateDto dto = ValidateMiddleware.fromBody(ctx, TaskCreateDto.class);
 
-		if (dto == null)
-			return;
-
-		Task task = taskService.createOneTask(dto.getTitle(), dto.getDeadline());
+		ServiceResponse<Task> resultOpt = taskService.createOneTask(dto.getTitle(), false, dto.getDeadline());
 
 		ctx.status(HttpStatusCode.CREATED.getCode());
 		ctx.json(new SuccessResponse(
 				HttpStatusCode.CREATED,
-				"Tasks created successfully",
-				task,
+				"Task created successfully",
+				resultOpt.getData(),
 				null));
 
 	}
@@ -193,25 +214,61 @@ public class TaskController extends BaseController {
 	 */
 
 	/**
-	 * Отметить задачу как выполненную.
+	 * Завершить задачу по её идентификатору.
+	 * <p>
+	 * Выполняет попытку завершения задачи:
+	 * - Если задача уже была завершена ранее, возвращает статус {@code 200 OK} и
+	 * сообщение "Task is already completed".
+	 * - Если задача была успешно завершена в результате запроса, возвращает статус
+	 * {@code 201 Created} и сообщение "Task marked as completed successfully".
+	 * - Если задача с указанным ID не найдена, выбрасывает исключение
+	 * {@link NotFoundTaskException}.
+	 * - В случае непредвиденного типа процесса возвращает
+	 * {@code 500 Internal Server Error}.
+	 * <p>
+	 * Использует валидацию параметров пути через {@link ValidateMiddleware}.
 	 *
-	 * @param ctx контекст запроса
+	 * @param ctx Контекст HTTP-запроса Javalin
+	 * @throws Exception Если валидация параметров запроса или выполнение операции
+	 *                   завершается с ошибкой
 	 */
 	private void completeOneTaskById(Context ctx) throws Exception {
 
 		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
 
-		Optional<Task> updated = taskService.completeOneTaskById(dto.getId());
+		Optional<ServiceResponse<Task>> resultOpt = taskService.completeOneTaskById(dto.getId());
 
-		if (!updated.isPresent()) {
+		if (resultOpt.isEmpty()) {
 			throw new NotFoundTaskException("Task with this id not found", Map.of("id", dto.getId()));
 		}
 
-		ctx.json(new SuccessResponse(
-				HttpStatusCode.CREATED,
-				"Task marked as completed successfully",
-				updated.get(),
-				Map.of("id", dto.getId())));
+		ServiceResponse<Task> result = resultOpt.get();
+
+		if (result.getProcess() == ServiceProcessType.NOTHING) {
+			// Задача уже была выполнена
+			ctx.status(HttpStatusCode.OK.getCode());
+			ctx.json(new SuccessResponse(
+					HttpStatusCode.OK,
+					"Task is already completed",
+					result.getData(),
+					Map.of("id", dto.getId())));
+		} else if (result.getProcess() == ServiceProcessType.UPDATED) {
+			// Задача успешно завершена
+			ctx.status(HttpStatusCode.CREATED.getCode());
+			ctx.json(new SuccessResponse(
+					HttpStatusCode.CREATED,
+					"Task marked as completed successfully",
+					result.getData(),
+					Map.of("id", dto.getId())));
+		} else {
+			// Непредвиденное поведение (на будущее защита)
+			ctx.status(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+			ctx.json(new SuccessResponse(
+					HttpStatusCode.INTERNAL_SERVER_ERROR,
+					"Unknown process during task completion",
+					result.getData(),
+					Map.of("id", dto.getId())));
+		}
 
 	}
 }
