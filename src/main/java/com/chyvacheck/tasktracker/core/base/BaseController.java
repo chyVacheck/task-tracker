@@ -33,10 +33,18 @@ import com.chyvacheck.tasktracker.core.system.ModuleType;
 public abstract class BaseController extends BaseModule {
 
 	/**
+	 * Базовый путь маршрутов контроллера (например, /tasks).
+	 */
+	protected final String basePath;
+
+	/**
 	 * Конструктор базового контроллера.
 	 * Устанавливает тип модуля как CONTROLLER.
+	 *
+	 * @param basePath базовый путь для маршрутов контроллера
 	 */
-	protected BaseController() {
+	protected BaseController(String basePath) {
 		super(ModuleType.CONTROLLER);
+		this.basePath = basePath;
 	}
 }

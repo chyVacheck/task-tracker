@@ -15,6 +15,8 @@
  * @details
  * Роуты:
  * - GET /tasks — получить все задачи
+ * - GET /tasks/completed — получить выполненные задачи
+ * - GET /tasks/incomplete — получить не выполненные задачи
  * - GET /tasks/{id} — получить задачу по ID
  * - POST /tasks — создать новую задачу
  * - PATCH /tasks/{id} — отметить задачу как выполненную
@@ -67,6 +69,7 @@ public class TaskController extends BaseController {
 	 * @param taskService сервис для работы с задачами
 	 */
 	public TaskController(ITaskService taskService) {
+		super("/tasks"); // Устанавливаем базовый путь для маршрутов задач
 		this.taskService = taskService;
 	}
 
@@ -76,12 +79,12 @@ public class TaskController extends BaseController {
 	 * @param app экземпляр Javalin
 	 */
 	public void registerRoutes(Javalin app) {
-		app.get("/tasks", this::getAllTasks);
-		app.get("/tasks/completed", this::getCompletedTasks);
-		app.get("/tasks/incomplete", this::getIncompleteTasks);
-		app.get("/tasks/{id}", this::getOneTaskById);
-		app.post("/tasks", this::createOneTask);
-		app.patch("/tasks/{id}", this::completeOneTaskById);
+		app.get(basePath, this::getAllTasks);
+		app.get(basePath + "/completed", this::getCompletedTasks);
+		app.get(basePath + "/incomplete", this::getIncompleteTasks);
+		app.get(basePath + "/{id}", this::getOneTaskById);
+		app.post(basePath, this::createOneTask);
+		app.patch(basePath + "/{id}", this::completeOneTaskById);
 	}
 
 	/**
