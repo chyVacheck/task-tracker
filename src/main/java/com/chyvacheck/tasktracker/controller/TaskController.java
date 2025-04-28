@@ -47,8 +47,8 @@ import java.util.Optional;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.custom.NotFoundTaskException;
-import com.chyvacheck.tasktracker.core.response.HttpStatusCode;
-import com.chyvacheck.tasktracker.core.response.SuccessResponse;
+import com.chyvacheck.tasktracker.core.response.http.HttpStatusCode;
+import com.chyvacheck.tasktracker.core.response.http.SuccessResponse;
 import com.chyvacheck.tasktracker.core.base.BaseController;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
