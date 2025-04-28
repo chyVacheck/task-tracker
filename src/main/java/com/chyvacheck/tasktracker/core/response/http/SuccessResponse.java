@@ -23,12 +23,14 @@
  * Dmytro Shakh
  */
 
-package com.chyvacheck.tasktracker.core.response;
+package com.chyvacheck.tasktracker.core.response.http;
 
 /**
  * ! java imports
  */
 import java.util.Map;
+
+import com.chyvacheck.tasktracker.core.response.base.InnerResponse;
 
 /**
  * Реализация успешного ответа API.

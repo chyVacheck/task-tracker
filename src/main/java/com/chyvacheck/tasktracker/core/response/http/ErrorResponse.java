@@ -28,7 +28,7 @@
  * Dmytro Shakh
  */
 
-package com.chyvacheck.tasktracker.core.response;
+package com.chyvacheck.tasktracker.core.response.http;
 
 /**
  * ! java imports
@@ -39,6 +39,7 @@ import java.util.Map;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.base.ErrorCode;
+import com.chyvacheck.tasktracker.core.response.base.InnerResponse;
 
 /**
  * Реализация ответа API в случае ошибки.

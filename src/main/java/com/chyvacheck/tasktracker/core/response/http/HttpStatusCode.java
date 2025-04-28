@@ -30,7 +30,7 @@
  * Dmytro Shakh
  */
 
-package com.chyvacheck.tasktracker.core.response;
+package com.chyvacheck.tasktracker.core.response.http;
 
 public enum HttpStatusCode {
 

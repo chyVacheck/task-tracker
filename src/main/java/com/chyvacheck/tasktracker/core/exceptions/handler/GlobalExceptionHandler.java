@@ -43,8 +43,8 @@ import java.util.Map;
  */
 import com.chyvacheck.tasktracker.core.base.BaseException;
 import com.chyvacheck.tasktracker.core.base.BaseExceptionHandler;
-import com.chyvacheck.tasktracker.core.response.ErrorResponse;
 import com.chyvacheck.tasktracker.core.exceptions.base.ErrorCode;
+import com.chyvacheck.tasktracker.core.response.http.ErrorResponse;
 
 /**
  * Глобальный обработчик всех ошибок в приложении.

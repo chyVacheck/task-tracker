@@ -31,7 +31,7 @@ package com.chyvacheck.tasktracker.core.exceptions.base;
 /**
  * ! my imports
  */
-import com.chyvacheck.tasktracker.core.response.HttpStatusCode;
+import com.chyvacheck.tasktracker.core.response.http.HttpStatusCode;
 
 /**
  * Перечисление всех кодов ошибок в приложении.
