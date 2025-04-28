@@ -39,6 +39,7 @@ package com.chyvacheck.tasktracker.service;
  */
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 import java.time.LocalDateTime;
 
 /**
@@ -75,7 +76,9 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return список всех задач
 	 */
 	public ServiceResponse<List<Task>> getAllTasks() {
-		List<Task> tasks = repository.getAllTask();
+		List<Task> tasks = repository.getAllTask().stream()
+				.sorted(Comparator.comparingLong(Task::getId))
+				.toList();
 
 		return new ServiceResponse<>(ServiceProcessType.FOUND, tasks);
 	}
@@ -153,6 +156,8 @@ public class TaskService extends BaseService implements ITaskService {
 		}
 
 		task.markAsCompleted();
+		repository.saveTask(task);
+
 		return Optional.of(new ServiceResponse<>(ServiceProcessType.UPDATED, task));
 	}
 

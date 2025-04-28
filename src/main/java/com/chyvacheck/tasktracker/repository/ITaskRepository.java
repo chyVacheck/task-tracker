@@ -9,16 +9,19 @@
  * Основные задачи репозитория:
  * - Изоляция слоя доступа к данным
  * - Работа с сущностями задач
+ * - Унифицированный контракт для различных реализаций (память, файлы, базы данных)
  * 
  * Методы:
  * - Получение списка всех задач
+ * - Получение задач по статусу выполнения
  * - Получение задачи по ID
- * - Создание новой задачи с разными параметрами
- * - Завершение задачи по ID
+ * - Создание новой задачи
+ * - Сохранение (обновление) задачи
  * 
  * @example
  * ITaskRepository repository = new InMemoryTaskRepository();
  * Task task = repository.createOneTask("New Task");
+ * List<Task> tasks = repository.getAllTask();
  * 
  * @author
  * Dmytro Shakh
@@ -78,27 +81,9 @@ public interface ITaskRepository {
 	Task createOneTask(String title, boolean complete, LocalDateTime deadline);
 
 	/**
-	 * Создать новую задачу без дедлайна.
+	 * Сохранить или обновить задачу.
 	 *
-	 * @param title    название задачи
-	 * @param complete статус выполнения задачи
-	 * @return созданная задача
+	 * @param task задача для сохранения
 	 */
-	Task createOneTask(String title, boolean complete);
-
-	/**
-	 * Создать новую задачу без дедлайна и со статусом \"не выполнена\".
-	 * 
-	 * @param title название задачи
-	 * @return созданная задача
-	 */
-	Task createOneTask(String title);
-
-	/**
-	 * Отметить задачу как выполненную по её ID.
-	 *
-	 * @param id идентификатор задачи
-	 * @return обновлённая задача, если найдена; иначе Optional.empty()
-	 */
-	Optional<Task> completeOneTaskById(long id);
+	void saveTask(Task task);
 }

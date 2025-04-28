@@ -29,6 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.time.LocalDateTime;
 
 /**
+ * ! my imports
+ */
+import com.chyvacheck.tasktracker.filesystem.SystemSettingsStorage;
+
+/**
  * Модель задачи в системе.
  */
 public class Task {
@@ -38,14 +43,14 @@ public class Task {
 	/**
 	 * Статическое поле для генерации уникальных идентификаторов задач.
 	 */
-	static AtomicLong lastId = new AtomicLong(0);
+	static AtomicLong lastId = new AtomicLong(SystemSettingsStorage.getLastId());
 
 	// * Свойства сущности
 
 	/**
 	 * Время создания задачи.
 	 */
-	private final LocalDateTime createdAt = LocalDateTime.now();
+	private LocalDateTime createdAt = LocalDateTime.now();
 
 	/**
 	 * Уникальный идентификатор задачи.
@@ -60,7 +65,7 @@ public class Task {
 	/**
 	 * Статус выполнения задачи (true — выполнена, false — не выполнена).
 	 */
-	private boolean isComplete = false;
+	private boolean completed = false;
 
 	/**
 	 * Дедлайн задачи (время до которого необходимо её завершить).
@@ -81,7 +86,7 @@ public class Task {
 	public Task(String title, boolean isComplete, LocalDateTime deadline) {
 		this.id = Task.generateNewId();
 		this.title = title;
-		this.isComplete = isComplete;
+		this.completed = isComplete;
 		this.deadline = deadline;
 	}
 
@@ -99,8 +104,8 @@ public class Task {
 	/**
 	 * Конструктор задачи с указанием названия и статуса (без дедлайна).
 	 *
-	 * @param title      название задачи
-	 * @param isComplete статус выполнения задачи
+	 * @param title     название задачи
+	 * @param completed статус выполнения задачи
 	 */
 	public Task(String title, boolean complete) {
 		this(title, complete, null);
@@ -115,6 +120,10 @@ public class Task {
 		this(title, false, null);
 	}
 
+	public Task() {
+		// нужен для Jackson
+	}
+
 	// * Приватные методы
 
 	/**
@@ -123,7 +132,9 @@ public class Task {
 	 * @return новый уникальный идентификатор
 	 */
 	private static long generateNewId() {
-		return lastId.getAndIncrement();
+		long newId = lastId.incrementAndGet();
+		SystemSettingsStorage.setLastId(newId);
+		return newId;
 	}
 
 	// * Геттеры и бизнес-методы
@@ -137,6 +148,10 @@ public class Task {
 		return this.createdAt;
 	}
 
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
 	/**
 	 * Получить уникальный идентификатор задачи.
 	 *
@@ -144,6 +159,10 @@ public class Task {
 	 */
 	public long getId() {
 		return this.id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	/**
@@ -155,11 +174,8 @@ public class Task {
 		return this.title;
 	}
 
-	/**
-	 * Отметить задачу как выполненную.
-	 */
-	public void markAsCompleted() {
-		this.isComplete = true;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	/**
@@ -168,7 +184,11 @@ public class Task {
 	 * @return true если задача выполнена, иначе false
 	 */
 	public boolean isCompleted() {
-		return this.isComplete;
+		return this.completed;
+	}
+
+	public void setCompleted(boolean completed) {
+		this.completed = completed;
 	}
 
 	/**
@@ -180,6 +200,17 @@ public class Task {
 		return this.deadline;
 	}
 
+	public void setDeadline(LocalDateTime deadline) {
+		this.deadline = deadline;
+	}
+
+	/**
+	 * Отметить задачу как выполненную.
+	 */
+	public void markAsCompleted() {
+		this.completed = true;
+	}
+
 	/**
 	 * Переопределение метода toString для удобного отображения информации о задаче.
 	 *
@@ -189,8 +220,9 @@ public class Task {
 	public String toString() {
 		return "Task{id=" + id +
 				", title='" + title + '\'' +
-				", isComplete=" + isComplete +
+				", isComplete=" + completed +
 				", createdAt=" + createdAt +
+				", deadline=" + deadline +
 				'}';
 	}
 

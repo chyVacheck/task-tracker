@@ -7,7 +7,7 @@
  * 
  * @description
  * Реализация репозитория задач (Task) с хранением данных в памяти.
- * Используется для хранения задач в процессе работы приложения без постоянного сохранения в базу данных.
+ * Используется для хранения задач в процессе работы приложения без постоянного сохранения в файловую систему или базу данных.
  * 
  * @details
  * Особенности реализации:
@@ -15,15 +15,16 @@
  * - ID задач автоматически генерируются при создании
  * - Поддерживаются базовые операции CRUD:
  *   - Получение списка всех задач
+ *   - Получение задач по статусу выполнения
  *   - Получение задачи по ID
  *   - Создание новой задачи
- *   - Завершение задачи
+ *   - Сохранение обновлений задачи
  * 
- * Используется на начальном этапе разработки или для тестирования без полноценной базы данных.
+ * Используется на этапе разработки, тестирования или как in-memory альтернатива реальному репозиторию.
  * 
  * @example
  * InMemoryTaskRepository repo = new InMemoryTaskRepository();
- * Task task = repo.createOneTask(\"New task\");
+ * Task task = repo.createOneTask("New task");
  * List<Task> tasks = repo.getAllTask();
  * 
  * @author
@@ -61,6 +62,7 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 	 *
 	 * @return список всех задач
 	 */
+	@Override
 	public List<Task> getAllTask() {
 		return new ArrayList<Task>(tasks.values());
 	}
@@ -72,6 +74,7 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 	 *                  невыполненные
 	 * @return список задач, соответствующих статусу
 	 */
+	@Override
 	public List<Task> getTasksByCompletionStatus(boolean completed) {
 		return tasks.values().stream()
 				.filter(task -> task.isCompleted() == completed)
@@ -79,64 +82,38 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 	}
 
 	/**
-	 * Получить задачу по её ID.
+	 * Получает задачу по её идентификатору.
 	 *
 	 * @param id идентификатор задачи
-	 * @return задача, если найдена; иначе Optional.empty()
+	 * @return задача в Optional, если найдена; иначе Optional.empty()
 	 */
+	@Override
 	public Optional<Task> getOneTaskById(long id) {
 		return Optional.ofNullable(tasks.get(id));
 	}
 
 	/**
-	 * Создать новую задачу с дедлайном.
+	 * Создаёт новую задачу и сохраняет её в память.
 	 *
 	 * @param title    название задачи
 	 * @param complete статус выполнения задачи
-	 * @param deadline дедлайн задачи
+	 * @param deadline срок выполнения задачи
 	 * @return созданная задача
 	 */
+	@Override
 	public Task createOneTask(String title, boolean complete, LocalDateTime deadline) {
 		Task task = new Task(title, complete, deadline);
-		tasks.put(task.getId(), task);
+		saveTask(task);
 		return task;
 	}
 
 	/**
-	 * Создать новую задачу без дедлайна с указанным статусом выполнения.
+	 * Сохраняет задачу в память.
 	 *
-	 * @param title    название задачи
-	 * @param complete статус выполнения задачи
-	 * @return созданная задача
+	 * @param task задача для сохранения
 	 */
-	public Task createOneTask(String title, boolean complete) {
-		return this.createOneTask(title, complete, null);
-	}
-
-	/**
-	 * Создать новую задачу без дедлайна и со статусом \"не выполнена\".
-	 *
-	 * @param title название задачи
-	 * @return созданная задача
-	 */
-	public Task createOneTask(String title) {
-		return this.createOneTask(title, false, null);
-	}
-
-	/**
-	 * Отметить задачу как выполненную по её ID.
-	 *
-	 * @param id идентификатор задачи
-	 * @return обновлённая задача, если найдена; иначе Optional.empty()
-	 */
-	public Optional<Task> completeOneTaskById(long id) {
-		Task task = tasks.get(id);
-
-		if (task == null) {
-			return Optional.empty();
-		}
-
-		task.markAsCompleted();
-		return Optional.of(task);
+	@Override
+	public void saveTask(Task task) {
+		tasks.put(task.getId(), task);
 	}
 }

@@ -35,3 +35,6 @@ Thumbs.db
 # Javalin temp/cache (если используется)
 /cache/
 /tmp/
+
+# data
+data/*

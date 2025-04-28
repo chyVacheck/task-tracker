@@ -35,18 +35,16 @@ package com.chyvacheck.tasktracker;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.cfg.CoercionAction;
-import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.handler.GlobalExceptionHandler;
+import com.chyvacheck.tasktracker.core.system.ObjectMapperProvider;
+import com.chyvacheck.tasktracker.filesystem.SystemSettingsStorage;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.repository.ITaskRepository;
-import com.chyvacheck.tasktracker.repository.impl.InMemoryTaskRepository;
+import com.chyvacheck.tasktracker.repository.impl.FileTaskRepository;
 import com.chyvacheck.tasktracker.controller.TaskController;
 import com.chyvacheck.tasktracker.service.ITaskService;
 import com.chyvacheck.tasktracker.service.TaskService;
@@ -58,17 +56,11 @@ public class Main {
 	public static void main(String[] args) {
 		System.out.println("🧠 Загружен класс: " + ValidateMiddleware.class.getProtectionDomain().getCodeSource());
 
-		// Настройка ObjectMapper для работы с датами и запретом автоприведения типов
-		ObjectMapper objectMapper = new ObjectMapper()
-				.registerModule(new JavaTimeModule())
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+		// Загружаем системные настройки (например, lastId)
+		SystemSettingsStorage.loadSettings();
 
-		// для коректно сериализации LocalDateTime в iso формат
-		objectMapper
-				.coercionConfigDefaults()
-				.setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail)
-				.setCoercion(CoercionInputShape.Integer, CoercionAction.Fail)
-				.setCoercion(CoercionInputShape.Float, CoercionAction.Fail);
+		// Настройка ObjectMapper для работы с датами и запретом автоприведения типов
+		ObjectMapper objectMapper = ObjectMapperProvider.get();
 
 		// Инициализация Javalin сервера
 		Javalin app = Javalin.create(config -> {
@@ -76,7 +68,8 @@ public class Main {
 		}).start(7070);
 
 		// Создание сервисов и репозиториев
-		ITaskRepository taskRepository = new InMemoryTaskRepository();
+		// ITaskRepository taskRepository = new InMemoryTaskRepository();
+		ITaskRepository taskRepository = new FileTaskRepository();
 		ITaskService taskService = new TaskService(taskRepository);
 		TaskController taskController = new TaskController(taskService);
 
