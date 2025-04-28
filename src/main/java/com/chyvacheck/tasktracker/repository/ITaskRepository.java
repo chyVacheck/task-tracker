@@ -51,6 +51,15 @@ public interface ITaskRepository {
 	List<Task> getAllTask();
 
 	/**
+	 * Получить список задач по статусу выполнения.
+	 *
+	 * @param completed true — только выполненные задачи; false — только
+	 *                  невыполненные
+	 * @return список задач, соответствующих статусу
+	 */
+	List<Task> getTasksByCompletionStatus(boolean completed);
+
+	/**
 	 * Получить задачу по её идентификатору.
 	 *
 	 * @param id идентификатор задачи

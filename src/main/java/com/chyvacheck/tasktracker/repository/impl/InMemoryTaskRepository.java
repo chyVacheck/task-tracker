@@ -66,6 +66,19 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 	}
 
 	/**
+	 * Получить список задач по статусу выполнения.
+	 *
+	 * @param completed true — только выполненные задачи; false — только
+	 *                  невыполненные
+	 * @return список задач, соответствующих статусу
+	 */
+	public List<Task> getTasksByCompletionStatus(boolean completed) {
+		return tasks.values().stream()
+				.filter(task -> task.isCompleted() == completed)
+				.toList();
+	}
+
+	/**
 	 * Получить задачу по её ID.
 	 *
 	 * @param id идентификатор задачи

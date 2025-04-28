@@ -38,7 +38,6 @@ import java.time.LocalDateTime;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.model.Task;
-import com.chyvacheck.tasktracker.repository.ITaskRepository;
 
 /**
  * Интерфейс для работы с задачами на уровне сервисного слоя.
@@ -59,6 +58,15 @@ public interface ITaskService {
 	 * @return задача, если найдена; иначе Optional.empty()
 	 */
 	Optional<Task> getOneTaskById(long id);
+
+	/**
+	 * Получить список задач по статусу выполнения.
+	 *
+	 * @param completed true — только выполненные задачи; false — только
+	 *                  невыполненные
+	 * @return список задач
+	 */
+	List<Task> getTasksByCompletionStatus(boolean completed);
 
 	/**
 	 * Создать новую задачу с указанными параметрами.

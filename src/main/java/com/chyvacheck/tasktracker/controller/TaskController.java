@@ -45,6 +45,8 @@ import java.util.Optional;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.custom.NotFoundTaskException;
+import com.chyvacheck.tasktracker.core.response.HttpStatusCode;
+import com.chyvacheck.tasktracker.core.response.SuccessResponse;
 import com.chyvacheck.tasktracker.core.base.BaseController;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
@@ -75,6 +77,8 @@ public class TaskController extends BaseController {
 	 */
 	public void registerRoutes(Javalin app) {
 		app.get("/tasks", this::getAllTasks);
+		app.get("/tasks/completed", this::getCompletedTasks);
+		app.get("/tasks/incomplete", this::getIncompleteTasks);
 		app.get("/tasks/{id}", this::getOneTaskById);
 		app.post("/tasks", this::createOneTask);
 		app.patch("/tasks/{id}", this::completeOneTaskById);
@@ -91,7 +95,42 @@ public class TaskController extends BaseController {
 	 */
 	private void getAllTasks(Context ctx) {
 		List<Task> tasks = taskService.getAllTasks();
-		ctx.json(tasks);
+
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.OK,
+				"All tasks fetched successfully",
+				tasks,
+				null));
+	}
+
+	/**
+	 * Получить все выполненные задачи.
+	 *
+	 * @param ctx контекст запроса
+	 */
+	private void getCompletedTasks(Context ctx) {
+		List<Task> tasks = taskService.getTasksByCompletionStatus(true);
+
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.OK,
+				"Complete tasks fetched successfully",
+				tasks,
+				null));
+	}
+
+	/**
+	 * Получить все невыполненные задачи.
+	 *
+	 * @param ctx контекст запроса
+	 */
+	private void getIncompleteTasks(Context ctx) {
+		List<Task> tasks = taskService.getTasksByCompletionStatus(false);
+
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.OK,
+				"Incomplete tasks fetched successfully",
+				tasks,
+				null));
 	}
 
 	/**
@@ -106,11 +145,16 @@ public class TaskController extends BaseController {
 
 		Optional<Task> updated = taskService.getOneTaskById(dto.getId());
 
-		if (updated.isPresent()) {
-			ctx.json(updated.get());
-		} else {
+		if (!updated.isPresent()) {
 			throw new NotFoundTaskException("Task with this id not found", Map.of("id", dto.getId()));
 		}
+
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.OK,
+				"Tasks fetched successfully",
+				updated.get(),
+				Map.of("id", dto.getId())));
+
 	}
 
 	/**
@@ -131,7 +175,13 @@ public class TaskController extends BaseController {
 			return;
 
 		Task task = taskService.createOneTask(dto.getTitle(), dto.getDeadline());
-		ctx.status(201).json(task);
+
+		ctx.status(HttpStatusCode.CREATED.getCode());
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.CREATED,
+				"Tasks created successfully",
+				task,
+				null));
 
 	}
 
@@ -144,15 +194,21 @@ public class TaskController extends BaseController {
 	 *
 	 * @param ctx контекст запроса
 	 */
-	private void completeOneTaskById(Context ctx) {
-		long id = Long.parseLong(ctx.pathParam("id"));
+	private void completeOneTaskById(Context ctx) throws Exception {
 
-		Optional<Task> updated = taskService.completeOneTaskById(id);
+		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
 
-		if (updated.isPresent()) {
-			ctx.json(updated.get());
-		} else {
-			ctx.status(404).result("Task not found");
+		Optional<Task> updated = taskService.completeOneTaskById(dto.getId());
+
+		if (!updated.isPresent()) {
+			throw new NotFoundTaskException("Task with this id not found", Map.of("id", dto.getId()));
 		}
+
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.CREATED,
+				"Task marked as completed successfully",
+				updated.get(),
+				Map.of("id", dto.getId())));
+
 	}
 }

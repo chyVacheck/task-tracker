@@ -77,6 +77,17 @@ public class TaskService extends BaseService implements ITaskService {
 	}
 
 	/**
+	 * Получить список задач по статусу выполнения.
+	 *
+	 * @param completed true — только выполненные задачи; false — только
+	 *                  невыполненные
+	 * @return список задач
+	 */
+	public List<Task> getTasksByCompletionStatus(boolean completed) {
+		return repository.getTasksByCompletionStatus(completed);
+	}
+
+	/**
 	 * Получить задачу по её ID.
 	 *
 	 * @param id идентификатор задачи

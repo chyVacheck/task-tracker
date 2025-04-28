@@ -35,6 +35,8 @@ import java.util.Map;
  */
 public class SuccessResponse extends InnerResponse {
 
+	private final Object data;
+
 	/**
 	 * Конструктор успешного ответа.
 	 *
@@ -42,7 +44,7 @@ public class SuccessResponse extends InnerResponse {
 	 * @param message сообщение для клиента
 	 * @param details дополнительные детали ответа
 	 */
-	public SuccessResponse(HttpStatusCode status, String message, Map<String, Object> details) {
+	public SuccessResponse(HttpStatusCode status, String message, Object data, Map<String, Object> details) {
 		super(status, message, details);
 
 		if (!status.isSuccess()) {
@@ -50,6 +52,16 @@ public class SuccessResponse extends InnerResponse {
 					"SuccessResponse can only use success HTTP status codes (2xx)!");
 		}
 
+		this.data = data;
+
 	}
 
+	/**
+	 * Получить данные ответа.
+	 *
+	 * @return объект данных
+	 */
+	public Object getData() {
+		return data;
+	}
 }
