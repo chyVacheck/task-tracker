@@ -39,7 +39,6 @@ import java.time.LocalDateTime;
  */
 import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
 import com.chyvacheck.tasktracker.model.Task;
-import com.chyvacheck.tasktracker.repository.ITaskRepository;
 
 /**
  * Интерфейс для работы с задачами на уровне сервисного слоя.
