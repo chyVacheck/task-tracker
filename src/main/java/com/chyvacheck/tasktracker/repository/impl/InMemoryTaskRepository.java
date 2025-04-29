@@ -120,4 +120,20 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 	public void saveTask(Task task) {
 		tasks.put(task.getId(), task);
 	}
+
+	/**
+	 * ? Delete
+	 */
+
+	/**
+	 * Удаляет задачу из памяти по её ID.
+	 *
+	 * @param id идентификатор задачи
+	 * @return удалённая задача, если была; иначе Optional.empty()
+	 */
+	@Override
+	public Optional<Task> deleteTaskById(long id) {
+		Task removed = tasks.remove(id);
+		return Optional.ofNullable(removed);
+	}
 }

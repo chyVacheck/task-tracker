@@ -239,4 +239,23 @@ public class TaskService extends BaseService implements ITaskService {
 		return Optional.of(new ServiceResponse<>(ServiceProcessType.UPDATED, task));
 	}
 
+	/**
+	 * ? Delete
+	 */
+
+	/**
+	 * Удалить задачу по её ID.
+	 *
+	 * @param id идентификатор задачи
+	 * @return Optional содержащий удалённую задачу в обёртке ServiceResponse, если
+	 *         задача была найдена; иначе Optional.empty()
+	 */
+	@Override
+	public Optional<ServiceResponse<Task>> deleteOneTaskById(long id) {
+		this.info("Delete task by id", Map.of("id", id));
+
+		Optional<Task> taskOpt = repository.deleteTaskById(id);
+
+		return taskOpt.map(task -> new ServiceResponse<>(ServiceProcessType.DELETED, task));
+	}
 }

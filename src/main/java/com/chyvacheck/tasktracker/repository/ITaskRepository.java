@@ -86,4 +86,12 @@ public interface ITaskRepository {
 	 * @param task задача для сохранения
 	 */
 	void saveTask(Task task);
+
+	/**
+	 * Удалить задачу по её идентификатору.
+	 *
+	 * @param id идентификатор задачи
+	 * @return удалённая задача, если была найдена; иначе Optional.empty()
+	 */
+	Optional<Task> deleteTaskById(long id);
 }

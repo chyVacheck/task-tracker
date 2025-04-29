@@ -134,7 +134,8 @@ public class TaskController extends BaseController implements Routable {
 				new RouteDefinition("GET", basePath + "/completed", this::getCompletedTasks),
 				new RouteDefinition("GET", basePath + "/incomplete", this::getIncompleteTasks),
 				new RouteDefinition("GET", basePath + "/{id}", this::getOneTaskById),
-				new RouteDefinition("PATCH", basePath + "/{id}", this::completeOneTaskById));
+				new RouteDefinition("PATCH", basePath + "/{id}", this::completeOneTaskById),
+				new RouteDefinition("DELETE", basePath + "/{id}", this::deleteOneTaskById));
 	}
 
 	/**
@@ -318,5 +319,35 @@ public class TaskController extends BaseController implements Routable {
 					Map.of("id", dto.getId())));
 		}
 
+	}
+
+	/**
+	 * ? Delete
+	 */
+
+	/**
+	 * Удалить задачу по её идентификатору.
+	 *
+	 * @param ctx контекст запроса
+	 * @throws Exception если валидация или удаление завершились ошибкой
+	 */
+	private void deleteOneTaskById(Context ctx) throws Exception {
+
+		TaskIdPathDto dto = ValidateMiddleware.getInstance().fromPath(ctx, TaskIdPathDto.class);
+
+		Optional<ServiceResponse<Task>> resultOpt = taskService.deleteOneTaskById(dto.getId());
+
+		if (resultOpt.isEmpty()) {
+			throw new NotFoundTaskException("Task with this id not found", Map.of("id", dto.getId()));
+		}
+
+		ServiceResponse<Task> result = resultOpt.get();
+
+		ctx.status(HttpStatusCode.OK.getCode());
+		ctx.json(new SuccessResponse(
+				HttpStatusCode.OK,
+				"Task deleted successfully",
+				result.getData(),
+				Map.of("id", dto.getId())));
 	}
 }

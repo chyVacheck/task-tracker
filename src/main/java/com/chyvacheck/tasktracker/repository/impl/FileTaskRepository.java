@@ -166,4 +166,22 @@ public class FileTaskRepository extends BaseRepository implements ITaskRepositor
 	public void saveTask(Task task) {
 		TaskFileStorage.saveTask(task);
 	}
+
+	/**
+	 * Удаляет задачу из файловой системы по её ID.
+	 *
+	 * @param id идентификатор задачи
+	 * @return удалённая задача, если была; иначе Optional.empty()
+	 */
+	@Override
+	public Optional<Task> deleteTaskById(long id) {
+		Optional<Task> existing = TaskFileStorage.loadTaskById(id);
+
+		if (existing.isEmpty()) {
+			return Optional.empty();
+		}
+
+		TaskFileStorage.deleteTaskById(id);
+		return existing;
+	}
 }

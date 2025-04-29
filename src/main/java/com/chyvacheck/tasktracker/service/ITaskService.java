@@ -39,6 +39,7 @@ import java.time.LocalDateTime;
  */
 import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
 import com.chyvacheck.tasktracker.model.Task;
+import com.chyvacheck.tasktracker.repository.ITaskRepository;
 
 /**
  * Интерфейс для работы с задачами на уровне сервисного слоя.
@@ -86,4 +87,13 @@ public interface ITaskService {
 	 * @return результат выполнения операции с информацией о процессе
 	 */
 	Optional<ServiceResponse<Task>> completeOneTaskById(long id);
+
+	/**
+	 * Удалить задачу по её ID.
+	 *
+	 * @param id идентификатор задачи
+	 * @return Optional содержащий удалённую задачу в обёртке ServiceResponse, если
+	 *         задача была найдена; иначе Optional.empty()
+	 */
+	public Optional<ServiceResponse<Task>> deleteOneTaskById(long id);
 }
