@@ -8,7 +8,6 @@
  * 
  * @details
  * Основные задачи BaseModule:
- * - Автоматическое определение имени модуля через StackWalker
  * - Хранение типа модуля (ModuleType) для использования в логировании, мониторинге и структурировании проекта
  * 
  * Использование:
@@ -16,9 +15,6 @@
  * 
  * Пример наследования:
  * public class TaskController extends BaseController extends BaseModule
- * 
- * Примечание:
- * Использование StackWalker минимально нагружает производительность и позволяет надёжно определять реальный класс потомка.
  * 
  * @example
  * BaseModule module = new TaskController();
@@ -34,17 +30,24 @@
 package com.chyvacheck.tasktracker.core.base;
 
 /**
+ * ! java imports
+ */
+import java.util.Map;
+
+/**
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.system.ModuleType;
+import com.chyvacheck.tasktracker.core.system.logger.Logger;
 
 /**
  * Абстрактный базовый класс для всех модулей приложения.
  */
 public abstract class BaseModule {
 
-	private final String moduleName;
 	protected final ModuleType moduleType;
+	private final Class<?> moduleClass;
+	private final Logger logger = Logger.getInstance();
 
 	/**
 	 * Конструктор базового модуля.
@@ -52,20 +55,10 @@ public abstract class BaseModule {
 	 *
 	 * @param moduleType тип модуля (например, CONTROLLER, SERVICE)
 	 */
-	protected BaseModule(ModuleType moduleType) {
-		this.moduleName = resolveModuleName();
+	protected BaseModule(ModuleType moduleType, Class<?> moduleClass) {
 		this.moduleType = moduleType;
-	}
+		this.moduleClass = moduleClass;
 
-	/**
-	 * Определяет имя модуля через StackWalker.
-	 * 
-	 * @return полное имя класса потомка
-	 */
-	private static String resolveModuleName() {
-		return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-				.getCallerClass()
-				.getName();
 	}
 
 	/**
@@ -74,7 +67,7 @@ public abstract class BaseModule {
 	 * @return имя модуля
 	 */
 	public String getModuleName() {
-		return moduleName;
+		return moduleClass.getName();
 	}
 
 	/**
@@ -86,4 +79,23 @@ public abstract class BaseModule {
 		return moduleType;
 	}
 
+	/**
+	 * * logger
+	 */
+
+	protected void debug(String message, Map<String, Object> details) {
+		this.logger.debug(message, this.moduleType, getModuleName(), details);
+	}
+
+	protected void info(String message, Map<String, Object> details) {
+		this.logger.info(message, this.moduleType, getModuleName(), details);
+	}
+
+	protected void warn(String message, Map<String, Object> details) {
+		this.logger.warn(message, this.moduleType, getModuleName(), details);
+	}
+
+	protected void error(String message, Map<String, Object> details, Throwable throwable) {
+		this.logger.error(message, this.moduleType, getModuleName(), details, throwable);
+	}
 }

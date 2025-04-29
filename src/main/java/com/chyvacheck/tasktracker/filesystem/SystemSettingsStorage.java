@@ -57,7 +57,7 @@ public class SystemSettingsStorage {
 				settings = objectMapper.readValue(file, Map.class);
 			}
 		} catch (IOException e) {
-			throw new RuntimeException("Не удалось загрузить системные настройки", e);
+			throw new RuntimeException("Can not load system settings", e);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class SystemSettingsStorage {
 		try {
 			objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(SETTINGS_FILE), settings);
 		} catch (IOException e) {
-			throw new RuntimeException("Не удалось сохранить системные настройки", e);
+			throw new RuntimeException("Can not save system settings", e);
 		}
 	}
 

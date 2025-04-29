@@ -63,17 +63,66 @@ import com.chyvacheck.tasktracker.model.Task;
  */
 public class TaskController extends BaseController {
 
+	private static TaskController instance;
 	private final ITaskService taskService;
+
+	/**
+	 * * Constructor
+	 */
 
 	/**
 	 * Конструктор TaskController.
 	 * 
 	 * @param taskService сервис для работы с задачами
 	 */
-	public TaskController(ITaskService taskService) {
-		super("/tasks"); // Устанавливаем базовый путь для маршрутов задач
+	protected TaskController(ITaskService taskService) {
+		super(TaskController.class, "/tasks"); // Устанавливаем базовый путь для маршрутов задач
 		this.taskService = taskService;
 	}
+
+	/**
+	 * * Static methods
+	 */
+
+	/**
+	 * Инициализирует экземпляр TaskController.
+	 * <p>
+	 * Этот метод должен быть вызван только один раз при старте приложения.
+	 * При повторной попытке инициализации будет выброшено исключение
+	 * {@link IllegalStateException}.
+	 *
+	 * @param taskService сервис задач, необходимый для работы контроллера
+	 * @return инициализированный экземпляр TaskController
+	 * @throws IllegalStateException если контроллер уже был инициализирован
+	 */
+	public static TaskController initialize(ITaskService taskService) {
+		if (instance != null) {
+			throw new IllegalStateException("TaskController already initialized!");
+		}
+
+		TaskController.instance = new TaskController(taskService);
+		return instance;
+	}
+
+	/**
+	 * Получить текущий экземпляр TaskController.
+	 * <p>
+	 * Метод позволяет безопасно получить и использовать ранее инициализированный
+	 * экземпляр контроллера.
+	 *
+	 * @return экземпляр TaskController
+	 * @throws IllegalStateException если контроллер ещё не был инициализирован
+	 */
+	public static TaskController getInstance() {
+		if (TaskController.instance == null) {
+			throw new IllegalStateException("TaskController is not initialized yet!");
+		}
+		return TaskController.instance;
+	}
+
+	/**
+	 * * Methods
+	 */
 
 	/**
 	 * Регистрирует все маршруты (роуты) для задач в Javalin приложении.
@@ -90,7 +139,7 @@ public class TaskController extends BaseController {
 	}
 
 	/**
-	 * * Get
+	 * ? Get
 	 */
 
 	/**
@@ -180,7 +229,7 @@ public class TaskController extends BaseController {
 	}
 
 	/**
-	 * * Create
+	 * ? Create
 	 */
 
 	/**
@@ -210,7 +259,7 @@ public class TaskController extends BaseController {
 	}
 
 	/**
-	 * * Update
+	 * ? Update
 	 */
 
 	/**

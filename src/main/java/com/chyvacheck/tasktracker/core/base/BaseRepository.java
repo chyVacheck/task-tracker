@@ -25,23 +25,31 @@
  * Dmytro Shakh
  */
 
- package com.chyvacheck.tasktracker.core.base;
+package com.chyvacheck.tasktracker.core.base;
 
- /**
-  * ! my imports
-  */
- import com.chyvacheck.tasktracker.core.system.ModuleType;
- 
- /**
-  * Абстрактный базовый класс для всех репозиториев приложения.
-  */
- public abstract class BaseRepository extends BaseModule {
- 
-	 /**
-	  * Конструктор базового репозитория.
-	  * Устанавливает тип модуля как REPOSITORY.
-	  */
-	 public BaseRepository() {
-		 super(ModuleType.REPOSITORY);
-	 }
- }
+/**
+ * ! my imports
+ */
+import com.chyvacheck.tasktracker.core.system.ModuleType;
+
+/**
+ * Абстрактный базовый класс для всех репозиториев приложения.
+ */
+public abstract class BaseRepository extends BaseModule {
+
+	private static BaseRepository instance;
+
+	/**
+	 * Конструктор базового репозитория.
+	 * Устанавливает тип модуля как REPOSITORY.
+	 */
+	protected BaseRepository(Class<?> moduleClass) {
+		super(ModuleType.REPOSITORY, moduleClass);
+		instance = this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends BaseRepository> T getInstance() {
+		return (T) instance;
+	}
+}

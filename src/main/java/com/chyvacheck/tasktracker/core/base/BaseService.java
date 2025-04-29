@@ -23,23 +23,31 @@
  * Dmytro Shakh
  */
 
- package com.chyvacheck.tasktracker.core.base;
+package com.chyvacheck.tasktracker.core.base;
 
- /**
-  * ! my imports
-  */
- import com.chyvacheck.tasktracker.core.system.ModuleType;
- 
- /**
-  * Абстрактный базовый класс для всех сервисов приложения.
-  */
- public abstract class BaseService extends BaseModule {
- 
-	 /**
-	  * Конструктор базового сервиса.
-	  * Устанавливает тип модуля как SERVICE.
-	  */
-	 public BaseService() {
-		 super(ModuleType.SERVICE);
-	 }
- }
+/**
+ * ! my imports
+ */
+import com.chyvacheck.tasktracker.core.system.ModuleType;
+
+/**
+ * Абстрактный базовый класс для всех сервисов приложения.
+ */
+public abstract class BaseService extends BaseModule {
+
+	private static BaseService instance;
+
+	/**
+	 * Конструктор базового сервиса.
+	 * Устанавливает тип модуля как SERVICE.
+	 */
+	protected BaseService(Class<?> moduleClass) {
+		super(ModuleType.SERVICE, moduleClass);
+		instance = this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends BaseService> T getInstance() {
+		return (T) instance;
+	}
+}

@@ -23,6 +23,11 @@
 package com.chyvacheck.tasktracker.core.base;
 
 /**
+ * ! java imports
+ */
+import java.util.Map;
+
+/**
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.system.ModuleType;
@@ -41,10 +46,28 @@ public abstract class BaseController extends BaseModule {
 	 * Конструктор базового контроллера.
 	 * Устанавливает тип модуля как CONTROLLER.
 	 *
-	 * @param basePath базовый путь для маршрутов контроллера
+	 * @param basePath    базовый путь для маршрутов контроллера
+	 * @param moduleClass класс
 	 */
-	protected BaseController(String basePath) {
-		super(ModuleType.CONTROLLER);
+	protected BaseController(Class<?> moduleClass, String basePath) {
+		super(ModuleType.CONTROLLER, moduleClass);
 		this.basePath = basePath;
+	}
+
+	protected long logRequestStart(String methodName, String path, Map<String, ?> params) {
+		long startTime = System.currentTimeMillis();
+		this.info("Incoming request", Map.of(
+				"method", methodName,
+				"path", path,
+				"params", params));
+		return startTime;
+	}
+
+	protected void logRequestEnd(String methodName, String path, long startTime) {
+		long duration = System.currentTimeMillis() - startTime;
+		this.info("Outgoing response", Map.of(
+				"method", methodName,
+				"path", path,
+				"durationMs", duration));
 	}
 }

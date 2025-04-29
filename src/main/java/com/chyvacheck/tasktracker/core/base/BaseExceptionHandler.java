@@ -40,8 +40,8 @@ public abstract class BaseExceptionHandler extends BaseModule {
 	 * Конструктор базового обработчика исключений.
 	 * Устанавливает тип модуля как SYSTEM.
 	 */
-	public BaseExceptionHandler() {
-		super(ModuleType.SYSTEM);
+	public BaseExceptionHandler(Class<?> moduleClass) {
+		super(ModuleType.SYSTEM, moduleClass);
 	}
 
 }

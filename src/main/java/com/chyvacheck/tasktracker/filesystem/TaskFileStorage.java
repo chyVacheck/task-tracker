@@ -33,17 +33,22 @@ import java.util.List;
  * ! lib imports
  */
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.chyvacheck.tasktracker.core.base.BaseModule;
+import com.chyvacheck.tasktracker.core.system.ModuleType;
 /**
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.system.ObjectMapperProvider;
 import com.chyvacheck.tasktracker.model.Task;
 
-public class TaskFileStorage {
+public class TaskFileStorage extends BaseModule {
 
 	private static final String STORAGE_DIR = "data/tasks/";
 	private static final ObjectMapper objectMapper = ObjectMapperProvider.get();
+
+	TaskFileStorage() {
+		super(ModuleType.SYSTEM, TaskFileStorage.class);
+	}
 
 	/**
 	 * Загрузить все задачи из файловой системы.
@@ -94,7 +99,7 @@ public class TaskFileStorage {
 			Task task = objectMapper.readValue(file, Task.class);
 			return Optional.of(task);
 		} catch (IOException e) {
-			System.err.println("Ошибка при чтении задачи id=" + id);
+			System.err.println("Error during reading task id=" + id);
 			e.printStackTrace();
 			return Optional.empty();
 		}
@@ -118,7 +123,7 @@ public class TaskFileStorage {
 		try {
 			objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, task);
 		} catch (IOException e) {
-			throw new RuntimeException("Ошибка при сохранении задачи id=" + task.getId(), e);
+			throw new RuntimeException("Error during saving task id=" + task.getId(), e);
 		}
 	}
 
@@ -131,7 +136,7 @@ public class TaskFileStorage {
 		try {
 			Files.deleteIfExists(Paths.get(STORAGE_DIR + id + ".json"));
 		} catch (IOException e) {
-			throw new RuntimeException("Ошибка при удалении задачи id=" + id, e);
+			throw new RuntimeException("Error during deleting task id=" + id, e);
 		}
 	}
 }

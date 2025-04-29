@@ -55,19 +55,70 @@ import com.chyvacheck.tasktracker.model.Task;
  * Сервис для работы с задачами.
  */
 public class TaskService extends BaseService implements ITaskService {
+
+	private static TaskService instance;
 	private final ITaskRepository repository;
+
+	/**
+	 * * Constructor
+	 */
 
 	/**
 	 * Конструктор сервиса задач.
 	 *
 	 * @param repository репозиторий для работы с задачами
 	 */
-	public TaskService(ITaskRepository repository) {
+	protected TaskService(ITaskRepository repository) {
+		super(TaskService.class);
 		this.repository = repository;
 	}
 
 	/**
-	 * * Методы
+	 * * Static methods
+	 */
+
+	/**
+	 * Инициализирует экземпляр TaskService.
+	 * <p>
+	 * Этот метод должен быть вызван только один раз при старте приложения.
+	 * При повторной попытке инициализации будет выброшено исключение
+	 * {@link IllegalStateException}.
+	 *
+	 * @param repository репозиторий задач, необходимый для работы сервиса
+	 * @return инициализированный экземпляр TaskService
+	 * @throws IllegalStateException если сервис уже был инициализирован
+	 */
+	public static TaskService initialize(ITaskRepository repository) {
+		if (instance != null) {
+			throw new IllegalStateException("TaskService already initialized!");
+		}
+
+		TaskService.instance = new TaskService(repository);
+		return instance;
+	}
+
+	/**
+	 * Получить текущий экземпляр TaskService.
+	 * <p>
+	 * Метод позволяет безопасно получить и использовать ранее инициализированный
+	 * экземпляр сервиса.
+	 *
+	 * @return экземпляр TaskService
+	 * @throws IllegalStateException если сервис ещё не был инициализирован
+	 */
+	public static TaskService getInstance() {
+		if (TaskService.instance == null) {
+			throw new IllegalStateException("TaskService is not initialized yet!");
+		}
+		return TaskService.instance;
+	}
+
+	/**
+	 * * Methods
+	 */
+
+	/**
+	 * ? Get
 	 */
 
 	/**
@@ -76,6 +127,7 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return список всех задач
 	 */
 	public ServiceResponse<List<Task>> getAllTasks() {
+		this.info("getAllTasks", null);
 		List<Task> tasks = repository.getAllTask().stream()
 				.sorted(Comparator.comparingLong(Task::getId))
 				.toList();
@@ -115,6 +167,10 @@ public class TaskService extends BaseService implements ITaskService {
 	}
 
 	/**
+	 * ? Create
+	 */
+
+	/**
 	 * Создать новую задачу с указанными параметрами.
 	 *
 	 * @param title    название задачи
@@ -127,6 +183,10 @@ public class TaskService extends BaseService implements ITaskService {
 
 		return new ServiceResponse<>(ServiceProcessType.CREATED, task);
 	}
+
+	/**
+	 * ? Update
+	 */
 
 	/**
 	 * Попытаться завершить задачу по её идентификатору.

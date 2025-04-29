@@ -57,6 +57,10 @@ public class InMemoryTaskRepository extends BaseRepository implements ITaskRepos
 
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
+	InMemoryTaskRepository() {
+		super(InMemoryTaskRepository.class);
+	}
+
 	/**
 	 * Получить список всех задач.
 	 *

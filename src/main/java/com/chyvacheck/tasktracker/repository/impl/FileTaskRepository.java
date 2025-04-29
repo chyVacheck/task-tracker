@@ -37,13 +37,65 @@ import com.chyvacheck.tasktracker.core.base.BaseRepository;
  */
 public class FileTaskRepository extends BaseRepository implements ITaskRepository {
 
+	private static FileTaskRepository instance;
+
+	/**
+	 * * Constructor
+	 */
+
 	/**
 	 * Конструктор файлового репозитория задач.
 	 * На данный момент дополнительная инициализация не требуется.
 	 */
-	public FileTaskRepository() {
-		// возможно в будущем нужна будет инициализация
+	protected FileTaskRepository() {
+		super(FileTaskRepository.class);
 	}
+
+	/**
+	 * * Static methods
+	 */
+
+	/**
+	 * Инициализирует экземпляр FileTaskRepository.
+	 * <p>
+	 * Этот метод должен быть вызван только один раз при старте приложения.
+	 * При повторной попытке инициализации будет выброшено исключение
+	 * {@link IllegalStateException}.
+	 *
+	 * @return инициализированный экземпляр FileTaskRepository
+	 * @throws IllegalStateException если репозиторий уже был инициализирован
+	 */
+	public static FileTaskRepository initialize() {
+		if (FileTaskRepository.instance != null) {
+			throw new IllegalStateException("FileTaskRepository already initialized!");
+		}
+		FileTaskRepository.instance = new FileTaskRepository();
+		return FileTaskRepository.instance;
+	}
+
+	/**
+	 * Получить текущий экземпляр FileTaskRepository.
+	 * <p>
+	 * Метод позволяет безопасно получить и использовать ранее инициализированный
+	 * экземпляр репозитория.
+	 *
+	 * @return экземпляр FileTaskRepository
+	 * @throws IllegalStateException если репозиторий ещё не был инициализирован
+	 */
+	public static FileTaskRepository getInstance() {
+		if (FileTaskRepository.instance == null) {
+			throw new IllegalStateException("FileTaskRepository is not initialized yet!");
+		}
+		return FileTaskRepository.instance;
+	}
+
+	/**
+	 * * Methods
+	 */
+
+	/**
+	 * ? Get
+	 */
 
 	/**
 	 * Получить все задачи, хранящиеся в файловой системе.
@@ -82,6 +134,10 @@ public class FileTaskRepository extends BaseRepository implements ITaskRepositor
 	}
 
 	/**
+	 * ? Create
+	 */
+
+	/**
 	 * Создать новую задачу и сохранить её в файловую систему.
 	 *
 	 * @param title    название задачи
@@ -95,6 +151,10 @@ public class FileTaskRepository extends BaseRepository implements ITaskRepositor
 		saveTask(task);
 		return task;
 	}
+
+	/**
+	 * ? Update
+	 */
 
 	/**
 	 * Сохранить задачу в файловую систему.

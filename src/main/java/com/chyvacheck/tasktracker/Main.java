@@ -42,7 +42,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.chyvacheck.tasktracker.core.exceptions.handler.GlobalExceptionHandler;
 import com.chyvacheck.tasktracker.core.system.ObjectMapperProvider;
 import com.chyvacheck.tasktracker.filesystem.SystemSettingsStorage;
-import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.repository.ITaskRepository;
 import com.chyvacheck.tasktracker.repository.impl.FileTaskRepository;
 import com.chyvacheck.tasktracker.controller.TaskController;
@@ -54,8 +53,6 @@ import com.chyvacheck.tasktracker.service.TaskService;
  */
 public class Main {
 	public static void main(String[] args) {
-		System.out.println("🧠 Загружен класс: " + ValidateMiddleware.class.getProtectionDomain().getCodeSource());
-
 		// Загружаем системные настройки (например, lastId)
 		SystemSettingsStorage.loadSettings();
 
@@ -68,16 +65,17 @@ public class Main {
 		}).start(7070);
 
 		// Создание сервисов и репозиториев
-		// ITaskRepository taskRepository = new InMemoryTaskRepository();
-		ITaskRepository taskRepository = new FileTaskRepository();
-		ITaskService taskService = new TaskService(taskRepository);
-		TaskController taskController = new TaskController(taskService);
+		ITaskRepository taskRepository = FileTaskRepository.initialize();
+		ITaskService taskService = TaskService.initialize(taskRepository);
+		TaskController taskController = TaskController.initialize(taskService);
+
+		// TaskController taskController = new TaskController(taskService);
 
 		// Регистрация маршрутов
 		taskController.registerRoutes(app);
 
 		// Регистрация глобального обработчика ошибок
-		GlobalExceptionHandler.register(app);
+		new GlobalExceptionHandler(app);
 
 		System.out.println("🚀 Start!");
 	}

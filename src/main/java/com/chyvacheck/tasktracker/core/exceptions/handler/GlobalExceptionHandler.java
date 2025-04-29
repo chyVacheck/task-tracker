@@ -51,15 +51,24 @@ import com.chyvacheck.tasktracker.core.response.http.ErrorResponse;
  */
 public class GlobalExceptionHandler extends BaseExceptionHandler {
 
+	private Javalin app;
+
+	public GlobalExceptionHandler(Javalin app) {
+		super(GlobalExceptionHandler.class);
+		this.app = app;
+
+		register();
+	}
+
 	/**
 	 * Регистрирует глобальные обработчики исключений в Javalin-приложении.
 	 *
 	 * @param app экземпляр Javalin
 	 */
-	public static void register(Javalin app) {
+	public void register() {
 
 		// ✅ Обработка всех ошибок BaseException
-		app.exception(BaseException.class, (e, ctx) -> {
+		this.app.exception(BaseException.class, (e, ctx) -> {
 			ctx.status(e.getStatus());
 			ctx.json(new ErrorResponse(
 					e.getErrorCode(),
@@ -69,7 +78,7 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
 		});
 
 		// ✅ Обработка всех неожиданных ошибок
-		app.exception(Exception.class, (e, ctx) -> {
+		this.app.exception(Exception.class, (e, ctx) -> {
 			e.printStackTrace(); // можно заменить на полноценный логгер
 
 			ctx.status(500);
