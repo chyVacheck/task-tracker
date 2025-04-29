@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.chyvacheck.tasktracker.core.exceptions.handler.GlobalExceptionHandler;
 import com.chyvacheck.tasktracker.core.system.ObjectMapperProvider;
 import com.chyvacheck.tasktracker.filesystem.SystemSettingsStorage;
+import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.repository.ITaskRepository;
 import com.chyvacheck.tasktracker.repository.impl.FileTaskRepository;
 import com.chyvacheck.tasktracker.controller.TaskController;
@@ -64,12 +65,14 @@ public class Main {
 			config.jsonMapper(new JavalinJackson(objectMapper, false));
 		}).start(7070);
 
+		// Инициализация middlewares
+		ValidateMiddleware.initialize();
+
 		// Создание сервисов и репозиториев
 		ITaskRepository taskRepository = FileTaskRepository.initialize();
 		ITaskService taskService = TaskService.initialize(taskRepository);
 		TaskController taskController = TaskController.initialize(taskService);
 
-		// TaskController taskController = new TaskController(taskService);
 
 		// Регистрация маршрутов
 		taskController.registerRoutes(app);

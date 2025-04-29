@@ -35,6 +35,11 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 /**
  * ! java imports
@@ -48,20 +53,69 @@ import java.util.Set;
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.base.BaseException;
+import com.chyvacheck.tasktracker.core.base.BaseMiddleware;
 import com.chyvacheck.tasktracker.core.exceptions.base.ErrorCode;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 /**
  * Middleware для централизованной валидации входящих данных.
  */
-public class ValidateMiddleware {
+public class ValidateMiddleware extends BaseMiddleware {
 
+	private static ValidateMiddleware instance;
 	private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	private static final Validator validator = factory.getValidator();
+
+	/**
+	 * * Constructor
+	 */
+
+	protected ValidateMiddleware() {
+		super(ValidateMiddleware.class);
+	}
+
+	/**
+	 * * Static methods
+	 */
+
+	/**
+	 * Инициализирует экземпляр ValidateMiddleware.
+	 * <p>
+	 * Этот метод должен быть вызван только один раз при старте приложения.
+	 * При повторной попытке инициализации будет выброшено исключение
+	 * {@link IllegalStateException}.
+	 *
+	 * @return инициализированный экземпляр ValidateMiddleware
+	 * @throws IllegalStateException если ValidateMiddleware уже была
+	 *                               инициализирована
+	 */
+	public static ValidateMiddleware initialize() {
+		if (ValidateMiddleware.instance != null) {
+			throw new IllegalStateException("ValidateMiddleware already initialized!");
+		}
+		ValidateMiddleware.instance = new ValidateMiddleware();
+		return ValidateMiddleware.instance;
+	}
+
+	/**
+	 * Получить текущий экземпляр ValidateMiddleware.
+	 * <p>
+	 * Метод позволяет безопасно получить и использовать ранее инициализированный
+	 * экземпляр ValidateMiddleware.
+	 *
+	 * @return экземпляр ValidateMiddleware
+	 * @throws IllegalStateException если ValidateMiddleware ещё не была
+	 *                               инициализирована
+	 */
+	public static ValidateMiddleware getInstance() {
+		if (ValidateMiddleware.instance == null) {
+			throw new IllegalStateException("ValidateMiddleware is not initialized yet!");
+		}
+		return ValidateMiddleware.instance;
+	}
+
+	/**
+	 * * Methods
+	 */
 
 	/**
 	 * Валидировать тело запроса (body) и преобразовать в DTO.
@@ -71,7 +125,7 @@ public class ValidateMiddleware {
 	 * @return валидный экземпляр DTO
 	 * @throws Exception если валидация или десериализация не удалась
 	 */
-	public static <T> T fromBody(Context ctx, Class<T> dtoClass) throws Exception {
+	public <T> T fromBody(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = ctx.bodyAsClass(dtoClass);
 			return validate(dto);
@@ -89,7 +143,7 @@ public class ValidateMiddleware {
 	 * @return валидный экземпляр DTO
 	 * @throws Exception если валидация или десериализация не удалась
 	 */
-	public static <T> T fromQuery(Context ctx, Class<T> dtoClass) throws Exception {
+	public <T> T fromQuery(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = dtoClass.getDeclaredConstructor().newInstance();
 
@@ -119,7 +173,7 @@ public class ValidateMiddleware {
 	 * @return валидный экземпляр DTO
 	 * @throws Exception если валидация или десериализация не удалась
 	 */
-	public static <T> T fromPath(Context ctx, Class<T> dtoClass) throws Exception {
+	public <T> T fromPath(Context ctx, Class<T> dtoClass) throws Exception {
 		try {
 			T dto = dtoClass.getDeclaredConstructor().newInstance();
 
@@ -148,7 +202,7 @@ public class ValidateMiddleware {
 	 * @param value строковое значение
 	 * @return преобразованное значение
 	 */
-	private static Object parseValue(Class<?> type, String value) {
+	private Object parseValue(Class<?> type, String value) {
 		if (type == int.class || type == Integer.class)
 			return Integer.parseInt(value);
 		if (type == long.class || type == Long.class)
@@ -169,7 +223,7 @@ public class ValidateMiddleware {
 	 * @return валидный объект DTO
 	 * @throws BaseException если обнаружены ошибки валидации
 	 */
-	private static <T> T validate(T dto) {
+	private <T> T validate(T dto) {
 		System.out.println("📥 validate вызван");
 
 		Set<ConstraintViolation<T>> violations = validator.validate(dto);
@@ -195,7 +249,7 @@ public class ValidateMiddleware {
 	 * @param e исключение
 	 * @throws BaseException конвертированная ошибка
 	 */
-	private static void handleDeserializationError(Exception e) throws Exception {
+	private void handleDeserializationError(Exception e) throws Exception {
 		// ? Если проверка на целостность `json` объекта не прошла
 		if (e instanceof JsonParseException jpe) {
 			throw new BaseException(
