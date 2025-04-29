@@ -38,8 +38,10 @@ package com.chyvacheck.tasktracker.service;
  * ! java imports
  */
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.time.LocalDateTime;
 
 /**
@@ -127,7 +129,8 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return список всех задач
 	 */
 	public ServiceResponse<List<Task>> getAllTasks() {
-		this.info("getAllTasks", null);
+		this.info("get all tasks", null);
+
 		List<Task> tasks = repository.getAllTask().stream()
 				.sorted(Comparator.comparingLong(Task::getId))
 				.toList();
@@ -143,6 +146,8 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return список задач
 	 */
 	public ServiceResponse<List<Task>> getTasksByCompletionStatus(boolean completed) {
+		this.info("get all tasks", Map.of("completed", completed));
+
 		List<Task> tasks = repository.getTasksByCompletionStatus(completed);
 
 		return new ServiceResponse<>(ServiceProcessType.FOUND, tasks);
@@ -155,6 +160,8 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return задача, если найдена; иначе Optional.empty()
 	 */
 	public Optional<ServiceResponse<Task>> getOneTaskById(long id) {
+		this.info("get one task", Map.of("id", id));
+
 		Optional<Task> taskOpt = repository.getOneTaskById(id);
 
 		if (taskOpt.isEmpty()) {
@@ -179,6 +186,13 @@ public class TaskService extends BaseService implements ITaskService {
 	 * @return созданная задача
 	 */
 	public ServiceResponse<Task> createOneTask(String title, boolean complete, LocalDateTime deadline) {
+		Map<String, Object> details = new HashMap<>();
+		details.put("title", title);
+		details.put("complete", complete);
+		details.put("deadline", deadline); // даже если deadline == null, всё ок
+
+		this.info("create one task", details);
+
 		Task task = repository.createOneTask(title, complete, deadline);
 
 		return new ServiceResponse<>(ServiceProcessType.CREATED, task);
@@ -203,6 +217,8 @@ public class TaskService extends BaseService implements ITaskService {
 	 */
 	@Override
 	public Optional<ServiceResponse<Task>> completeOneTaskById(long id) {
+		this.info("complete one task", Map.of("id", id));
+
 		Optional<Task> taskOpt = repository.getOneTaskById(id);
 
 		if (taskOpt.isEmpty()) {
@@ -212,12 +228,14 @@ public class TaskService extends BaseService implements ITaskService {
 		Task task = taskOpt.get();
 
 		if (task.isCompleted()) {
+			this.info("task already completed", Map.of("id", id));
 			return Optional.of(new ServiceResponse<>(ServiceProcessType.NOTHING, task));
 		}
 
 		task.markAsCompleted();
 		repository.saveTask(task);
 
+		this.info("task marked as complete", Map.of("id", id));
 		return Optional.of(new ServiceResponse<>(ServiceProcessType.UPDATED, task));
 	}
 

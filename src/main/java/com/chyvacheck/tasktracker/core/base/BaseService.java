@@ -35,19 +35,12 @@ import com.chyvacheck.tasktracker.core.system.ModuleType;
  */
 public abstract class BaseService extends BaseModule {
 
-	private static BaseService instance;
-
 	/**
 	 * Конструктор базового сервиса.
 	 * Устанавливает тип модуля как SERVICE.
 	 */
 	protected BaseService(Class<?> moduleClass) {
 		super(ModuleType.SERVICE, moduleClass);
-		instance = this;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends BaseService> T getInstance() {
-		return (T) instance;
-	}
 }

@@ -33,6 +33,7 @@ package com.chyvacheck.tasktracker.core.exceptions.handler;
  */
 import io.javalin.Javalin;
 
+import java.util.HashMap;
 /**
  * ! java imports
  */
@@ -69,7 +70,15 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
 
 		// ✅ Обработка всех ошибок BaseException
 		this.app.exception(BaseException.class, (e, ctx) -> {
+
+			Map<String, Object> details = new HashMap<>();
+			details.put("errorCode", e.getErrorCode());
+			details.put("details", e.getDetails());
+			details.put("message", e.getMessage());
+
+			this.error("BaseException detected", details, e);
 			ctx.status(e.getStatus());
+
 			ctx.json(new ErrorResponse(
 					e.getErrorCode(),
 					e.getMessage(),

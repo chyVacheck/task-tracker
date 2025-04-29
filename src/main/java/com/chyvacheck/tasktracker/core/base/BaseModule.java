@@ -64,10 +64,19 @@ public abstract class BaseModule {
 	/**
 	 * Получить полное имя модуля (имя класса с пакетом).
 	 *
-	 * @return имя модуля
+	 * @return имя пакета и модуля
 	 */
 	public String getModuleName() {
 		return moduleClass.getName();
+	}
+
+	/**
+	 * Получить короткое имя модуля (только имя класса).
+	 *
+	 * @return только имя модуля
+	 */
+	public String getSimpleModuleName() {
+		return moduleClass.getSimpleName();
 	}
 
 	/**
@@ -84,18 +93,18 @@ public abstract class BaseModule {
 	 */
 
 	protected void debug(String message, Map<String, Object> details) {
-		this.logger.debug(message, this.moduleType, getModuleName(), details);
+		this.logger.debug(message, this.moduleType, this.getSimpleModuleName(), details);
 	}
 
 	protected void info(String message, Map<String, Object> details) {
-		this.logger.info(message, this.moduleType, getModuleName(), details);
+		this.logger.info(message, this.moduleType, this.getSimpleModuleName(), details);
 	}
 
 	protected void warn(String message, Map<String, Object> details) {
-		this.logger.warn(message, this.moduleType, getModuleName(), details);
+		this.logger.warn(message, this.moduleType, this.getSimpleModuleName(), details);
 	}
 
 	protected void error(String message, Map<String, Object> details, Throwable throwable) {
-		this.logger.error(message, this.moduleType, getModuleName(), details, throwable);
+		this.logger.error(message, this.moduleType, this.getSimpleModuleName(), details, throwable);
 	}
 }

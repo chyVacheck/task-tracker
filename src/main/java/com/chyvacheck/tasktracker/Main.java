@@ -11,10 +11,11 @@
  * - Подключение глобального обработчика ошибок
  * 
  * @details
- * Пример маршрутов:
- * - GET /tasks
- * - POST /tasks
- * - PATCH /tasks/{id}
+ * - Создаёт и конфигурирует Javalin
+ * - Настраивает ObjectMapper
+ * - Подключает глобальные обработчики ошибок
+ * - Инициализирует все модули (репозиторий, сервис, контроллер, middleware)
+ * - Регистрирует все маршруты через RouteManager
  * 
  * Приложение стартует на порту 7070.
  * 
@@ -37,9 +38,15 @@ import io.javalin.json.JavalinJackson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * ! java imports
+ */
+import java.util.List;
+
+/**
  * ! my imports
  */
 import com.chyvacheck.tasktracker.core.exceptions.handler.GlobalExceptionHandler;
+import com.chyvacheck.tasktracker.core.routes.RouteManager;
 import com.chyvacheck.tasktracker.core.system.ObjectMapperProvider;
 import com.chyvacheck.tasktracker.filesystem.SystemSettingsStorage;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
@@ -73,13 +80,17 @@ public class Main {
 		ITaskService taskService = TaskService.initialize(taskRepository);
 		TaskController taskController = TaskController.initialize(taskService);
 
-
-		// Регистрация маршрутов
-		taskController.registerRoutes(app);
+		/**
+		 * ✅ Регистрация маршрутов через RouteManager
+		 */
+		RouteManager routeManager = new RouteManager(app);
+		routeManager.registerControllers(List.of(
+				taskController // в будущем — другие контроллеры
+		));
 
 		// Регистрация глобального обработчика ошибок
 		new GlobalExceptionHandler(app);
 
-		System.out.println("🚀 Start!");
+		System.out.println("✅ Task Tracker started on http://localhost:7070/");
 	}
 }

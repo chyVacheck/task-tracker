@@ -33,7 +33,6 @@ package com.chyvacheck.tasktracker.controller;
 /**
  * ! lib imports
  */
-import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 /**
@@ -51,6 +50,8 @@ import com.chyvacheck.tasktracker.core.response.http.HttpStatusCode;
 import com.chyvacheck.tasktracker.core.response.http.SuccessResponse;
 import com.chyvacheck.tasktracker.core.response.service.ServiceProcessType;
 import com.chyvacheck.tasktracker.core.response.service.ServiceResponse;
+import com.chyvacheck.tasktracker.core.routes.Routable;
+import com.chyvacheck.tasktracker.core.routes.RouteDefinition;
 import com.chyvacheck.tasktracker.core.base.BaseController;
 import com.chyvacheck.tasktracker.middleware.validate.ValidateMiddleware;
 import com.chyvacheck.tasktracker.controller.dto.TaskIdPathDto;
@@ -61,10 +62,11 @@ import com.chyvacheck.tasktracker.model.Task;
 /**
  * Контроллер для работы с задачами (Task).
  */
-public class TaskController extends BaseController {
+public class TaskController extends BaseController implements Routable {
 
 	private static TaskController instance;
 	private final ITaskService taskService;
+	private final ValidateMiddleware validateMiddleware = ValidateMiddleware.getInstance();
 
 	/**
 	 * * Constructor
@@ -124,18 +126,15 @@ public class TaskController extends BaseController {
 	 * * Methods
 	 */
 
-	/**
-	 * Регистрирует все маршруты (роуты) для задач в Javalin приложении.
-	 * 
-	 * @param app экземпляр Javalin
-	 */
-	public void registerRoutes(Javalin app) {
-		app.get(basePath, this::getAllTasks);
-		app.get(basePath + "/completed", this::getCompletedTasks);
-		app.get(basePath + "/incomplete", this::getIncompleteTasks);
-		app.get(basePath + "/{id}", this::getOneTaskById);
-		app.post(basePath, this::createOneTask);
-		app.patch(basePath + "/{id}", this::completeOneTaskById);
+	@Override
+	public List<RouteDefinition> routes() {
+		return List.of(
+				new RouteDefinition("GET", basePath, this::getAllTasks),
+				new RouteDefinition("POST", basePath, this::createOneTask),
+				new RouteDefinition("GET", basePath + "/completed", this::getCompletedTasks),
+				new RouteDefinition("GET", basePath + "/incomplete", this::getIncompleteTasks),
+				new RouteDefinition("GET", basePath + "/{id}", this::getOneTaskById),
+				new RouteDefinition("PATCH", basePath + "/{id}", this::completeOneTaskById));
 	}
 
 	/**
@@ -210,7 +209,7 @@ public class TaskController extends BaseController {
 	 */
 	private void getOneTaskById(Context ctx) throws Exception {
 
-		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
+		TaskIdPathDto dto = this.validateMiddleware.fromPath(ctx, TaskIdPathDto.class);
 
 		Optional<ServiceResponse<Task>> resultOpt = taskService.getOneTaskById(dto.getId());
 
@@ -245,7 +244,7 @@ public class TaskController extends BaseController {
 	 */
 	private void createOneTask(Context ctx) throws Exception {
 
-		TaskCreateDto dto = ValidateMiddleware.fromBody(ctx, TaskCreateDto.class);
+		TaskCreateDto dto = this.validateMiddleware.fromBody(ctx, TaskCreateDto.class);
 
 		ServiceResponse<Task> resultOpt = taskService.createOneTask(dto.getTitle(), false, dto.getDeadline());
 
@@ -283,7 +282,7 @@ public class TaskController extends BaseController {
 	 */
 	private void completeOneTaskById(Context ctx) throws Exception {
 
-		TaskIdPathDto dto = ValidateMiddleware.fromPath(ctx, TaskIdPathDto.class);
+		TaskIdPathDto dto = this.validateMiddleware.fromPath(ctx, TaskIdPathDto.class);
 
 		Optional<ServiceResponse<Task>> resultOpt = taskService.completeOneTaskById(dto.getId());
 

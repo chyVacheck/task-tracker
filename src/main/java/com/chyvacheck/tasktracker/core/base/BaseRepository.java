@@ -37,19 +37,12 @@ import com.chyvacheck.tasktracker.core.system.ModuleType;
  */
 public abstract class BaseRepository extends BaseModule {
 
-	private static BaseRepository instance;
-
 	/**
 	 * Конструктор базового репозитория.
 	 * Устанавливает тип модуля как REPOSITORY.
 	 */
 	protected BaseRepository(Class<?> moduleClass) {
 		super(ModuleType.REPOSITORY, moduleClass);
-		instance = this;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends BaseRepository> T getInstance() {
-		return (T) instance;
-	}
 }
